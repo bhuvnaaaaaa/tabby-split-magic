@@ -125,6 +125,12 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
   const nudgeIntro = !nudge ? "" : tone === "Casual" ? "" : tone === "Playful" ? "Coffee on you? ☕🍕 " : "Per my last pizza 📊, kindly action this by EOD. ";
   const nudgeText = !nudge ? "" : `${nudgeIntro}Hey ${name(nudge.from)}! Here’s your split of ${money(nudge.amount)} for ${session.title} on Tabby:\n👉 Pay via 1-tap: ${appUrl}\nLet’s settle up whenever you can! ✨`;
   function sendWhatsApp() { const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(nudgeText)}`; const win = window.open(whatsappUrl, "_blank", "noopener,noreferrer"); if (!win) window.location.href = whatsappUrl; }
+  async function sendNudge() {
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try { await navigator.share({ title: `Tabby Split: ${session.title}`, text: nudgeText }); return; } catch { return; }
+    }
+    sendWhatsApp();
+  }
   async function copyNudge() { try { await navigator.clipboard.writeText(nudgeText); toast.success("Copied to clipboard!"); } catch { toast.error("Couldn’t copy — long-press the message to copy it."); } }
   async function copyUpi(upi: string) { try { await navigator.clipboard.writeText(upi); toast.success("UPI ID copied"); } catch { toast.error("Couldn’t copy — select the UPI ID and copy it."); } }
   function paidOtherWay(t: TransferAction) {
@@ -186,9 +192,14 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
           <span className="bubble-meta">Just now · <CheckCheck size={12} aria-hidden="true" /></span>
         </div>}
         <div className="nudge-actions">
-          <Button variant="tabby" asChild className="whatsapp-send"><a href={`https://wa.me/?text=${encodeURIComponent(nudgeText)}`} target="_blank" rel="noopener noreferrer" onClick={e => { e.preventDefault(); sendWhatsApp(); }}>💬 Send via WhatsApp</a></Button>
+          <Button variant="tabby" className="nudge-send" onClick={() => void sendNudge()}>💬 Send Nudge</Button>
+          <div className="nudge-app-row">
+            <Button variant="receipt" asChild><a href={`sms:&body=${encodeURIComponent(nudgeText)}`} aria-label="Send nudge via iMessage or SMS">💬 iMessage / SMS</a></Button>
+            <Button variant="receipt" asChild className="wa-send"><a href={`https://wa.me/?text=${encodeURIComponent(nudgeText)}`} target="_blank" rel="noopener noreferrer" aria-label="Send nudge via WhatsApp" onClick={e => { e.preventDefault(); sendWhatsApp(); }}>📱 WhatsApp</a></Button>
+          </div>
           <Button variant="receipt" onClick={() => void copyNudge()}>📋 Copy Text</Button>
         </div>
+        <p className="nudge-hint">Friendly social nudge — send it from any chat app.</p>
       </SheetContent>
     </Sheet>
     <Dialog open={Boolean(edit)} onOpenChange={open => { if (!open) setEdit(null); }}><DialogContent className={modalClass}><DialogTitle>{edit?.kind === "person" ? `${editedPerson?.name}’s payment details` : edit?.kind === "tax" ? "Edit shared taxes" : `Edit ${editedItem?.title ?? "expense"}`}</DialogTitle><DialogDescription>{edit?.kind === "person" ? "UPI payment details" : "Expense details"}</DialogDescription><form onSubmit={saveEdit} className="edit-form">

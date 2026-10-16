@@ -292,8 +292,11 @@ footer svg { color: var(--terracotta); }
 .nudge-sheet.dark .nudge-bubble { background: color-mix(in oklab, var(--success) 10%, var(--card)); border-color: var(--border); }
 .nudge-actions { display: grid; gap: 10px; }
 .nudge-actions > * { width: 100%; min-height: 48px; justify-content: center; border-radius: 14px; }
-.nudge-actions .whatsapp-send { --primary: #128c7e; --primary-foreground: #ffffff; background: #128c7e; color: #ffffff; font-weight: 700; box-shadow: 0 10px 24px -10px rgba(18, 140, 126, 0.6); }
-.nudge-actions .whatsapp-send:hover { background: #0f7f71; }
+.nudge-app-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.nudge-app-row > * { min-height: 48px; justify-content: center; border-radius: 14px; }
+.nudge-app-row .wa-send { background: #128c7e; color: #ffffff; border-color: transparent; font-weight: 700; box-shadow: 0 10px 24px -10px rgba(18, 140, 126, 0.6); }
+.nudge-app-row .wa-send:hover { background: #0f7f71; }
+.nudge-hint { margin: 0; font-size: 11px; line-height: 1.6; color: var(--muted-foreground); text-align: center; }
 @media (min-width: 760px) { .nudge-sheet { bottom: 32px; border-radius: 24px; } }
 .edit-form { display: grid; gap: 18px; }
 .edit-form label, .edit-form legend { font-size: 12px; font-weight: 500; }
