@@ -409,9 +409,9 @@ a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visib
 @keyframes hero-bob { 0%, 100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-6px) rotate(1deg); } }
 @keyframes hero-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 @media (max-width: 760px) {
-  .hero-title { flex-direction: column; justify-content: center; text-align: center; gap: 18px; }
+  .hero-title { flex-direction: column; justify-content: center; text-align: center; gap: 12px; }
   .hero-text .eyebrow { justify-content: center; } .hero-text .intro-copy { text-align: center; margin-inline: auto; }
-  .hero-cluster { order: -1; width: 112px; height: 112px; border-radius: 50%; background: var(--secondary); border: 1px solid var(--border); padding: 0; box-shadow: 0 12px 28px color-mix(in oklab, var(--primary) 16%, transparent); }
+  .hero-cluster { order: -1; width: 96px; height: 96px; border-radius: 50%; background: var(--secondary); border: 1px solid var(--border); padding: 0; box-shadow: 0 12px 28px color-mix(in oklab, var(--primary) 16%, transparent); }
   .hero-float { font-size: 20px; }
   .site-header { padding: 0 16px; }
   .currency-switch { display: none; }
