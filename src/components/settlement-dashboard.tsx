@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Check, CheckCheck, CircleCheck, Copy, CreditCard, MessageCircle, Pencil, ReceiptText, Send, Users } from "lucide-react";
+import { ArrowRight, Car, Check, CheckCheck, CircleCheck, Copy, CreditCard, House, MessageCircle, Pencil, Pizza, ReceiptText, Send, Users } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -116,7 +116,7 @@ export function SettlementDashboard({ session, onChange, dark }: { session: TabS
         </article>)}</div>
       </section>
       <section className="audit-section" aria-label="Itemized Note & Audit Trail"><div className="section-title"><h3>Itemized Note & Audit Trail</h3><ReceiptText size={17} /></div>
-        <div className="itemized-list">{session.items.map(item => { const category = expenseCategory(item.title); return <div className="expense-row" key={item.id}><span className="category-icon" title={category.label}>{category.icon || <ReceiptText size={17} />}</span><div className="expense-detail"><strong>{item.title}</strong><span>Paid by {name(item.paidById)}</span><small>{item.isOverheadFee ? "Split evenly · everyone" : item.splitAmongIds.map(name).join(", ")}</small></div><span className="item-amount">{money(item.amount)}</span><Button size="icon" variant="ghost" aria-label={`Edit ${item.title}`} title={`Edit ${item.title}`} onClick={() => startEdit({ kind: "item", id: item.id })}><Pencil /></Button></div>; })}
+        <div className="itemized-list">{session.items.map(item => { const category = expenseCategory(item.title); const Icon = category.label === "Dining" ? Pizza : category.label === "Transport" ? Car : category.label === "Home & stays" ? House : ReceiptText; return <div className="expense-row" key={item.id}><span className="category-icon" title={category.label} aria-label={category.label}><Icon size={17} /></span><div className="expense-detail"><strong>{item.title}</strong><span>Paid by {name(item.paidById)}</span><small>{item.isOverheadFee ? "Split evenly · everyone" : item.splitAmongIds.map(name).join(", ")}</small></div><span className="item-amount">{money(item.amount)}</span><Button size="icon" variant="ghost" aria-label={`Edit ${item.title}`} title={`Edit ${item.title}`} onClick={() => startEdit({ kind: "item", id: item.id })}><Pencil /></Button></div>; })}
           <div className="expense-row tax-row"><span className="category-icon"><ReceiptText size={17} /></span><div className="expense-detail"><strong>Shared taxes & fees</strong><span>Split evenly · everyone</span></div><span className="item-amount">{money(session.sharedTaxes)}</span><Button size="icon" variant="ghost" aria-label="Edit shared taxes" title="Edit shared taxes" onClick={() => startEdit({ kind: "tax" })}><Pencil /></Button></div>
         </div>
         <p className="allocation-note">Odd paise or cents go to {session.participants[0]?.name}. Unassigned taxes are credited to {session.participants[0]?.name}.</p>

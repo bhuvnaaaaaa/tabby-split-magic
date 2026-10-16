@@ -4,7 +4,8 @@ import type { TabSession, TransferAction } from "@/types/tabby";
 export function settlementProgress(transfers: TransferAction[]) {
   const total = transfers.reduce((sum, t) => sum + toMinorUnits(t.amount), 0);
   const settled = transfers.filter(t => t.isSettled).reduce((sum, t) => sum + toMinorUnits(t.amount), 0);
-  return { total, settled, percentage: total === 0 ? 100 : Math.round(settled / total * 100), complete: transfers.every(t => t.isSettled) };
+  const complete = transfers.every(t => t.isSettled);
+  return { total, settled, percentage: complete ? 100 : Math.min(99, Math.round(settled / total * 100)), complete };
 }
 
 export function upiPaymentLink(tab: TabSession, transfer: TransferAction): string | null {
