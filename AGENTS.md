@@ -10,7 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Application structure
-- Parse expense notes with a regex fallback and receipt photos with server-side multimodal extraction; require review and friend assignment before creating receipt liabilities.
+- Parse expense notes with the local regex parser first (instant) and use server-side AI only for notes it rejects; parse receipt photos with server-side multimodal extraction; require review and friend assignment before creating receipt liabilities.
 - Use integer minor units for all liabilities and transfers; group overhead is allocated once and decimal numbers are only DTO/display values, preventing floating-point leakage.
 - Validate strict extraction schemas and cross-references before computing balances; local fallback rejects unsupported notes instead of guessing financial obligations.
 - Keep AI helpers server-only and persist terminal access/credit pauses in a service-only circuit table; owner-confirmed recovery must clear the pause before fresh online requests.
