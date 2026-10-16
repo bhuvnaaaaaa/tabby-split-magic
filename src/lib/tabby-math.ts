@@ -63,9 +63,14 @@ export function calculateTabSession(tab: ParsedTab): TabSession {
   const creditors = balances.filter(p => p.balance > 0);
   const debtors = balances.filter(p => p.balance < 0);
   const transfers: TransferAction[] = [];
-  for (const debtor of debtors) for (const creditor of creditors) {
+  while (debtors.some(p => p.balance < 0) && creditors.some(p => p.balance > 0)) {
+    debtors.sort((a, b) => a.balance - b.balance);
+    creditors.sort((a, b) => b.balance - a.balance);
+    const debtor = debtors[0];
+    const creditor = creditors[0];
+    if (!debtor || !creditor) break;
     const amount = Math.min(-debtor.balance, creditor.balance);
-    if (amount <= 0) continue;
+    if (amount <= 0) break;
     const upi = participants.find(p => p.id === creditor.id)?.upiId;
     transfers.push({ id: `transfer-${transfers.length + 1}`, from: debtor.id, to: creditor.id, ...(upi ? { toUpi: upi } : {}), amount: fromMinorUnits(amount), isSettled: false });
     debtor.balance += amount;
