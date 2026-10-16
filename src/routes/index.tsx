@@ -38,6 +38,7 @@ function Index() {
   const [result, setResult] = useState<TabSession | null>(null);
   const [error, setError] = useState("");
   const [receiptOpen, setReceiptOpen] = useState(false);
+  const [sampleTrigger, setSampleTrigger] = useState(0);
   const [identityOpen, setIdentityOpen] = useState(false);
   const [friendId, setFriendId] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
@@ -95,6 +96,7 @@ function Index() {
           <div className="examples"><span>Or try a little inspiration</span><div className="example-buttons">{examples.map(example => <Button variant="example" size="sm" key={example.label} onClick={() => { setNotes(example.text); setError(""); notesRef.current?.focus(); }}>{example.label}<ArrowRight size={12} /></Button>)}</div></div>
           {error && <p className="form-error" role="alert">{error}</p>}
           <div className="input-actions"><Button variant="tabby" size="lg" disabled={loading} onClick={untangle}>{loading ? <><LoaderCircle className="animate-spin" /> Untangling…</> : <>Untangle Tab <ArrowRight /></>}</Button><Button variant="receipt" size="lg" onClick={() => setReceiptOpen(true)}><Camera />Upload Receipt</Button><span className="private-note"><ShieldCheck size={14} />Just between friends.</span></div>
+          <div className="sample-receipt-line"><span>Or</span><Button variant="link" size="sm" aria-label="Try a sample cafe receipt" onClick={() => { setReceiptOpen(true); setSampleTrigger(t => t + 1); }}>Try a sample cafe receipt <ArrowRight size={12} /></Button></div>
         </div>}
         {!shared && <div className="below-input"><span><Check size={14} /> Shared taxes, shared fairly <span className="separator-dot">·</span> No sign-up, no fuss</span></div>}
         {shared && error && <p className="form-error" role="alert">{error}</p>}
@@ -104,7 +106,7 @@ function Index() {
       </section>
       <section className="closing"><h2>Keep the memories.<br /><span>Not the mental math.</span></h2><p>For the dinners that run late, the trips worth taking,<br />and the people you’d do it all again with.</p><div className="closing-details"><span><ReceiptText /> Any shared expense</span><span><CheckCheck /> A fair, simple split</span><span><MessageCircle /> Less awkward chats</span></div></section>
     </main>
-    <ReceiptWorkflow open={receiptOpen} onOpenChange={setReceiptOpen} currency={currency} current={result} dark={dark} onComplete={tab => { setResult(tab); setShared(false); setFriendId(null); setParseNotice(""); history.replaceState(null, "", window.location.pathname); }} />
+    <ReceiptWorkflow open={receiptOpen} onOpenChange={setReceiptOpen} currency={currency} current={result} dark={dark} sampleTrigger={sampleTrigger} onComplete={tab => { setResult(tab); setShared(false); setFriendId(null); setParseNotice(""); history.replaceState(null, "", window.location.pathname); }} />
     <Dialog open={identityOpen} onOpenChange={setIdentityOpen}><DialogContent className={`tabby-modal${dark ? " dark" : ""}`}><DialogTitle>Which friend are you?</DialogTitle><DialogDescription>{result?.title}</DialogDescription><div className="identity-friends">{result?.participants.map(p => <Button key={p.id} variant="receipt" aria-label={`I am ${p.name}`} onClick={() => { setFriendId(p.id); setIdentityOpen(false); }}><span className="person-avatar">{p.name.slice(0, 1)}</span>{p.name}</Button>)}</div></DialogContent></Dialog>
     <Dialog open={shareOpen} onOpenChange={setShareOpen}><DialogContent className={`tabby-modal${dark ? " dark" : ""}`}><DialogTitle>Share the tab.</DialogTitle><DialogDescription>Anyone with this link can see names, expenses and UPI IDs. It’s an editable snapshot, not a live payment record.</DialogDescription><label className="share-link-label">Friend link<input aria-label="Shareable tab link" readOnly value={shareUrl} onFocus={e => e.target.select()} /></label><Button variant="tabby" aria-label="Copy friend link" onClick={async () => { try { await navigator.clipboard.writeText(shareUrl); setShareStatus("Link copied."); } catch { setShareStatus("Select and copy the link above."); } }}>Copy link</Button><p role="status">{shareStatus}</p></DialogContent></Dialog>
     <Toaster position="bottom-center" />

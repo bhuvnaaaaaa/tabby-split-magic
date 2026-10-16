@@ -4,11 +4,12 @@ import { FoodLoader } from "@/components/food-loader";
 import { Camera, Check, ImagePlus, Plus, ReceiptText, X } from "lucide-react";
 import { readReceipt } from "@/lib/tabby.functions";
 import { calculateTabSession, fromMinorUnits, toMinorUnits } from "@/lib/tabby-math";
+import { buildSampleReceipt } from "@/lib/tabby-sample";
 import type { TabSession } from "@/types/tabby";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 
-export function ReceiptWorkflow({ open, onOpenChange, currency, current, dark, onComplete }: { open: boolean; onOpenChange: (open: boolean) => void; currency: string; current: TabSession | null; dark: boolean; onComplete: (tab: TabSession) => void }) {
+export function ReceiptWorkflow({ open, onOpenChange, currency, current, dark, sampleTrigger, onComplete }: { open: boolean; onOpenChange: (open: boolean) => void; currency: string; current: TabSession | null; dark: boolean; sampleTrigger: number; onComplete: (tab: TabSession) => void }) {
 
 // Downscale large photos to a crisp, reader-friendly JPEG data URL (max 1600px, under ~4 MB).
 async function shrinkImage(file: File): Promise<string> {
@@ -39,6 +40,19 @@ async function shrinkImage(file: File): Promise<string> {
     if (!draft || draft.participants.some(p => p.id === payer)) return;
     setPayer(draft.participants[0]?.id ?? "");
   }, [draft, payer]);
+  useEffect(() => {
+    if (!sampleTrigger) return;
+    // One-tap sample: load the pre-tested cafe receipt straight into the review step.
+    const session = buildSampleReceipt(currency);
+    const participants = current?.participants ?? session.participants;
+    const first = participants[0];
+    if (!first) return;
+    const ids = participants.map(p => p.id);
+    setError(""); setPhoto(null);
+    setDraft({ ...session, participants, items: session.items.map(item => ({ ...item, paidById: first.id, splitAmongIds: ids })) });
+    setPayer(first.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sampleTrigger]);
 
   async function choose(file: File) {
     if (active.current) return;

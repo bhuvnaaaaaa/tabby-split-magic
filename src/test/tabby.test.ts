@@ -6,6 +6,7 @@ import { validateParsedTab } from "@/lib/tabby-schema";
 import type { ParsedTab } from "@/types/tabby";
 import { expenseCategory, settlementProgress, upiPaymentLink } from "@/lib/tabby-settlement";
 import { decodeTabHash, encodeTabHash } from "@/lib/tabby-share";
+import { buildSampleReceipt } from "@/lib/tabby-sample";
 
 const sample = (): ParsedTab => ({ title: "Dinner", currency: "INR", participants: [{ id: "a", name: "Ana", upiId: "ana@bank" }, { id: "b", name: "Bob" }, { id: "c", name: "Cia" }], items: [{ id: "food", title: "Food", amount: 30, paidById: "a", splitAmongIds: ["a", "b", "c"] }], sharedTaxes: 0.1 });
 
@@ -116,5 +117,16 @@ describe("shareable snapshots", () => {
   });
   it("keeps share links compact", () => {
     expect(encodeTabHash(calculateTabSession(sample())).length).toBeLessThan(320);
+  });
+});
+
+describe("sample receipt", () => {
+  it("loads a balanced pre-tested cafe bill with a shared service line", () => {
+    const tab = buildSampleReceipt("INR");
+    expect(tab.title).toBe("THE CORNER CAFE");
+    expect(tabGrossTotal(tab)).toBe(1701);
+    expect(tab.items.some(i => i.isOverheadFee)).toBe(true);
+    expect(tab.transfers.length).toBeGreaterThanOrEqual(1);
+    balanced(tab);
   });
 });

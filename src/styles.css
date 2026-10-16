@@ -164,6 +164,8 @@ textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--secon
 .input-actions button { height: 44px; font-size: 12px; padding: 0 21px; }
 .input-actions button svg { width: 15px; height: 15px; }
 .private-note { display: flex; align-items: center; gap: 5px; font-size: 9px; color: var(--muted-foreground); margin-left: auto; }
+.sample-receipt-line { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 11px; color: var(--muted-foreground); }
+.sample-receipt-line button { height: auto; padding: 2px 0; font-size: 11px; gap: 5px; }
 .below-input { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 17px 2px; color: var(--muted-foreground); font-size: 10px; }
 .below-input > span { display: flex; align-items: center; gap: 5px; }
 .below-input > span > svg { color: var(--success); }
