@@ -287,7 +287,7 @@ footer svg { color: var(--terracotta); }
 .tone-pill { border-radius: 999px; padding: 0 16px; min-height: 40px; display: inline-flex; align-items: center; font-size: 13px; font-weight: 600; font-family: var(--font-sans); background: color-mix(in oklab, var(--primary) 4%, var(--card)); border: 1px solid var(--border); color: var(--foreground); cursor: pointer; transition: transform 0.15s ease, background 0.15s ease; }
 .tone-pill:hover { background: color-mix(in oklab, var(--primary) 10%, var(--card)); }
 .tone-pill.active { background: var(--primary); border-color: var(--primary); color: var(--primary-foreground); transform: scale(1.04); }
-.nudge-bubble { display: grid; gap: 10px; margin: 16px 0; background: linear-gradient(135deg, #f4fbf7, #f3efff); border-radius: 16px; border-top-left-radius: 6px; padding: 20px; font-size: 14px; line-height: 1.625; color: var(--foreground); border: 1px solid color-mix(in oklab, var(--primary) 18%, transparent); box-shadow: 0 8px 24px -14px color-mix(in oklab, var(--primary) 35%, transparent); }
+.nudge-bubble { display: grid; gap: 10px; margin: 16px 0 0; background: linear-gradient(135deg, #f4fbf7, #f3efff); border-radius: 16px; border-top-left-radius: 6px; padding: 20px; font-size: 14px; line-height: 1.625; color: var(--foreground); border: 1px solid color-mix(in oklab, var(--primary) 18%, transparent); box-shadow: 0 8px 24px -14px color-mix(in oklab, var(--primary) 35%, transparent); }
 .nudge-bubble .bubble-line { margin: 0; overflow-wrap: anywhere; }
 .nudge-bubble strong { font-weight: 700; }
 .bubble-meta { justify-self: end; display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--muted-foreground); }
