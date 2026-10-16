@@ -11,6 +11,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowRight, Camera, Check, CheckCheck, Heart, LoaderCircle, MessageCircle, Moon, ReceiptText, ShieldCheck, Sun, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
 import friends from "@/assets/friends-coffee.webp";
 import { FoodLoader, LOADER_MIN_MS, wait } from "@/components/food-loader";
 
@@ -99,6 +100,7 @@ function Index() {
     <ReceiptWorkflow open={receiptOpen} onOpenChange={setReceiptOpen} currency={currency} current={result} dark={dark} onComplete={tab => { setResult(tab); setShared(false); setFriendId(null); setParseNotice(""); history.replaceState(null, "", window.location.pathname); }} />
     <Dialog open={identityOpen} onOpenChange={setIdentityOpen}><DialogContent className={`tabby-modal${dark ? " dark" : ""}`}><DialogTitle>Which friend are you?</DialogTitle><DialogDescription>{result?.title}</DialogDescription><div className="identity-friends">{result?.participants.map(p => <Button key={p.id} variant="receipt" aria-label={`I am ${p.name}`} onClick={() => { setFriendId(p.id); setIdentityOpen(false); }}><span className="person-avatar">{p.name.slice(0, 1)}</span>{p.name}</Button>)}</div></DialogContent></Dialog>
     <Dialog open={shareOpen} onOpenChange={setShareOpen}><DialogContent className={`tabby-modal${dark ? " dark" : ""}`}><DialogTitle>Share the tab.</DialogTitle><DialogDescription>Anyone with this link can see names, expenses and UPI IDs. It’s an editable snapshot, not a live payment record.</DialogDescription><label className="share-link-label">Friend link<input aria-label="Shareable tab link" readOnly value={shareUrl} onFocus={e => e.target.select()} /></label><Button variant="tabby" aria-label="Copy friend link" onClick={async () => { try { await navigator.clipboard.writeText(shareUrl); setShareStatus("Link copied."); } catch { setShareStatus("Select and copy the link above."); } }}>Copy link</Button><p role="status">{shareStatus}</p></DialogContent></Dialog>
+    <Toaster position="bottom-center" />
     <footer><span className="footer-logo">tabby<span className="small-dot" /></span><span>A little less owing. A little more living.</span><span>Made for good company <Heart size={12} /></span></footer>
   </div>;
 }
