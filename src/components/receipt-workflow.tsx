@@ -9,6 +9,21 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 
 export function ReceiptWorkflow({ open, onOpenChange, currency, current, dark, onComplete }: { open: boolean; onOpenChange: (open: boolean) => void; currency: string; current: TabSession | null; dark: boolean; onComplete: (tab: TabSession) => void }) {
+
+// Downscale large photos to a crisp, reader-friendly JPEG data URL (max 1600px, under ~4 MB).
+async function shrinkImage(file: File): Promise<string> {
+  const dataUrl = await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => typeof reader.result === "string" ? resolve(reader.result) : reject(new Error("Couldn’t read this image.")); reader.onerror = () => reject(new Error("Couldn’t read this image.")); reader.readAsDataURL(file); });
+  if (file.size <= 4_000_000) return dataUrl;
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => { const el = new Image(); el.onload = () => resolve(el); el.onerror = () => reject(new Error("Couldn’t read this image.")); el.src = dataUrl; });
+  const scale = Math.min(1, 1600 / Math.max(img.width, img.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(img.width * scale));
+  canvas.height = Math.max(1, Math.round(img.height * scale));
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return dataUrl;
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", 0.85);
+}
   const parse = useServerFn(readReceipt);
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
