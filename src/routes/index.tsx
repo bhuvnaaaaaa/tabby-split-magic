@@ -25,7 +25,7 @@ type Settlement = { from: string; to: string; amount: number };
 type Split = { total: number; each: number; people: number; tax: number; transfers: Settlement[] };
 
 function splitNotes(notes: string): Split | null {
-  const payments = [...notes.matchAll(/([A-Z][a-z]+)\s+paid\s+[₹$€]?\s*([\d,]+(?:\.\d+)?)/gi)].map(m => ({ name: m[1], amount: Number(m[2].replaceAll(",", "")) }));
+  const payments = [...notes.matchAll(/([A-Z][a-z]+)\s+paid\s+[₹$€]?\s*([\d,]+(?:\.\d+)?)/gi)].flatMap(m => { const name = m[1]; const amount = m[2]; return name && amount ? [{ name, amount: Number(amount.replaceAll(",", "")) }] : []; });
   const count = Number(notes.match(/(\d+)\s+(?:of us|people|friends|roommates)/i)?.[1]);
   const tax = Number(notes.match(/tax\s*(?:was|is|of|:)?\s*[₹$€]?\s*([\d,]+(?:\.\d+)?)/i)?.[1]?.replaceAll(",", "") ?? 0);
   const names = [...new Set(payments.map(p => p.name))];
@@ -76,7 +76,7 @@ function Index() {
     <header className="site-header">
       <a href="/" className="wordmark" aria-label="Tabby home">tabby<span className="logo-mark"><ReceiptText size={13} strokeWidth={1.8} /></span></a>
       <div className="header-controls">
-        <div className="currency-switch" aria-label="Currency">{[["INR", "₹"], ["USD", "$"], ["EUR", "€"]].map(([code, symbol]) => <Button key={code} size="sm" variant={currency === code ? "currency" : "ghost"} aria-pressed={currency === code} onClick={() => setCurrency(code)}>{symbol} <span>{code}</span></Button>)}</div>
+        <div className="currency-switch" aria-label="Currency">{([{ code: "INR", symbol: "₹" }, { code: "USD", symbol: "$" }, { code: "EUR", symbol: "€" }]).map(({ code, symbol }) => <Button key={code} size="sm" variant={currency === code ? "currency" : "ghost"} aria-pressed={currency === code} onClick={() => setCurrency(code)}>{symbol} <span>{code}</span></Button>)}</div>
         <span className="header-divider" />
         <Button variant="ghost" size="icon" aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} title={dark ? "Light theme" : "Dark theme"} onClick={() => setDark(!dark)}>{dark ? <Sun /> : <Moon />}</Button>
       </div>
@@ -84,7 +84,7 @@ function Index() {
     <main>
       <section className="intro">
         <div className="eyebrow"><span className="small-dot" /> LESS MATH. MORE MEMORIES.</div>
-        <h1>Good times with friends,<br />settled without the <em>awkward math.</em></h1>
+        <h1>Good times with friends,<br /> settled without the <em>awkward math.</em></h1>
         <p className="intro-copy">Paste your dinner notes, trip recap, or upload a bill. We’ll untangle who paid,<br className="desktop-break" /> split shared taxes equally, and give you clean 1-tap links.</p>
       </section>
       <section className="workspace" aria-label="Split a tab">
