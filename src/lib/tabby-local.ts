@@ -29,7 +29,7 @@ export function parseTabLocally(notes: string, currency: string): ParsedTab {
     return { id: `item-${i + 1}`, title: p.title, amount: p.amount, paidById: payer.id, splitAmongIds: [...ids], isOverheadFee: /\b(?:tax|taxes|delivery|fee|fees|tip|tips)\b/i.test(p.title) };
   });
   // Use full text for decimals (periods inside monetary literals must not split clauses).
-  const standalone = /(?:^|[.\n])\s*(taxes?|delivery(?:\s+fees?)?|fees?|tips?)\s*(?:was|were|is|of|:)?\s*[₹$€]?\s*(\d[\d,]*(?:\.\d{1,2})?)(?!\d|\.\d)/gi;
+  const standalone = /(?:^|[.\n])\s*(tax(?:es)?|delivery(?:\s+fees?)?|fees?|tips?)\s*(?:was|were|is|of|:)?\s*[₹$€]?\s*(\d[\d,]*(?:\.\d{1,2})?)(?!\d|\.\d)/gi;
   const taxMinor = [...notes.matchAll(standalone)].reduce((sum, m) => sum + (m[2] ? toMinorUnits(m[2]) : 0), 0);
   const title = /cabin|road trip/i.test(notes) ? "Road trip cabin" : /electricity|internet|flat/i.test(notes) ? "Monthly flat utilities" : /pizza|dinner|cab/i.test(notes) ? "Weekend dinner & cabs" : "Shared tab";
   return { title, currency, participants, items, sharedTaxes: fromMinorUnits(taxMinor) };
