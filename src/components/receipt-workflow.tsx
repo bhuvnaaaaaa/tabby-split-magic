@@ -9,6 +9,21 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 
 export function ReceiptWorkflow({ open, onOpenChange, currency, current, dark, onComplete }: { open: boolean; onOpenChange: (open: boolean) => void; currency: string; current: TabSession | null; dark: boolean; onComplete: (tab: TabSession) => void }) {
+
+// Downscale large photos to a crisp, reader-friendly JPEG data URL (max 1600px, under ~4 MB).
+async function shrinkImage(file: File): Promise<string> {
+  const dataUrl = await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => typeof reader.result === "string" ? resolve(reader.result) : reject(new Error("Couldn’t read this image.")); reader.onerror = () => reject(new Error("Couldn’t read this image.")); reader.readAsDataURL(file); });
+  if (file.size <= 4_000_000) return dataUrl;
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => { const el = new Image(); el.onload = () => resolve(el); el.onerror = () => reject(new Error("Couldn’t read this image.")); el.src = dataUrl; });
+  const scale = Math.min(1, 1600 / Math.max(img.width, img.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(img.width * scale));
+  canvas.height = Math.max(1, Math.round(img.height * scale));
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return dataUrl;
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", 0.85);
+}
   const parse = useServerFn(readReceipt);
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -28,10 +43,11 @@ export function ReceiptWorkflow({ open, onOpenChange, currency, current, dark, o
   async function choose(file: File) {
     if (active.current) return;
     setError("");
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5_000_000 || !file.size) { setError("Choose a JPEG, PNG or WebP receipt photo smaller than 5 MB."); return; }
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || !file.size) { setError("Choose a JPEG, PNG or WebP receipt photo."); return; }
     setPhoto({ name: file.name, url: URL.createObjectURL(file) }); setDraft(null); setBusy(true); active.current = true;
     try {
-      const image = await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => typeof reader.result === "string" ? resolve(reader.result) : reject(new Error("Couldn’t read this image.")); reader.onerror = () => reject(new Error("Couldn’t read this image.")); reader.readAsDataURL(file); });
+      // Phone photos are often 5-12 MB; shrink them on-device so every receipt fits the reader.
+      const image = await shrinkImage(file);
       const result = await parse({ data: { image, currency: currency as "INR" | "USD" | "EUR" } });
       if (!result.ok) throw new Error(result.error);
       const participants = current?.participants ?? result.session.participants;
@@ -50,7 +66,7 @@ export function ReceiptWorkflow({ open, onOpenChange, currency, current, dark, o
       onComplete(session); onOpenChange(false);
     } catch (e) { setError(e instanceof Error ? e.message : "Check each item’s amount and assigned friends."); }
   }
-  return <Dialog open={open} onOpenChange={value => { if (!busy) onOpenChange(value); }}><DialogContent className={`tabby-modal receipt-modal${dark ? " dark" : ""}`} onEscapeKeyDown={e => { if (busy) e.preventDefault(); }} onPointerDownOutside={e => { if (busy) e.preventDefault(); }}><DialogTitle>{draft ? "Who ordered what?" : "Bring the bill."}</DialogTitle><DialogDescription>{draft ? "Review receipt amounts and friends before settling." : "JPEG, PNG or WebP · up to 5 MB"}</DialogDescription>
+  return <Dialog open={open} onOpenChange={value => { if (!busy) onOpenChange(value); }}><DialogContent className={`tabby-modal receipt-modal${dark ? " dark" : ""}`} onEscapeKeyDown={e => { if (busy) e.preventDefault(); }} onPointerDownOutside={e => { if (busy) e.preventDefault(); }}><DialogTitle>{draft ? "Who ordered what?" : "Bring the bill."}</DialogTitle><DialogDescription>{draft ? "Review receipt amounts and friends before settling." : "JPEG, PNG or WebP · big phone photos are shrunk automatically"}</DialogDescription>
     {!draft && <div className={`receipt-dropzone${dragging ? " is-dragging" : ""}`} onDragOver={e => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={e => { e.preventDefault(); setDragging(false); const file = e.dataTransfer.files[0]; if (file) void choose(file); }}>
       {photo ? <img src={photo.url} alt="Receipt being read" /> : <ImagePlus size={34} />}
       {busy ? <FoodLoader compact /> : <><p>Drop your receipt photo here</p><div className="receipt-upload-actions"><Button variant="tabby" onClick={() => fileRef.current?.click()} aria-label="Choose receipt photo"><ImagePlus />Choose photo</Button><Button variant="receipt" onClick={() => cameraRef.current?.click()} aria-label="Take receipt photo"><Camera />Take photo</Button></div></>}
