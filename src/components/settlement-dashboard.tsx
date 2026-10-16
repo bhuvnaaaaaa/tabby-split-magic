@@ -180,7 +180,7 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
         <div className="sheet-handle" />
         <SheetTitle>A little nudge, no awkwardness.</SheetTitle>
         <SheetDescription className="sr-only">{nudge ? `A note for ${name(nudge.from)} · ${money(nudge.amount)}` : ""}</SheetDescription>
-        {nudge && <div className="nudge-recipient"><span className="nudge-recipient-avatar" aria-hidden="true">{name(nudge.from).slice(0, 1)}</span>Sending to&nbsp;<strong>{name(nudge.from)}</strong>&nbsp;·&nbsp;{money(nudge.amount)}</div>}
+        {nudge && <div className="nudge-recipient"><span className="nudge-recipient-avatar" aria-hidden="true">{name(nudge.from).slice(0, 1)}</span>For&nbsp;<strong>{name(nudge.from)}</strong>&nbsp;·&nbsp;{money(nudge.amount)}</div>}
         <div className="tone-toggle" aria-label="Nudge tone">
           {TONES.map(value => <button key={value} type="button" className={`tone-pill${tone === value ? " active" : ""}`} aria-pressed={tone === value} onClick={() => setTone(value)}>{TONE_LABELS[value]}</button>)}
         </div>
