@@ -4,6 +4,7 @@ import { TABBY_EXAMPLES, parseTabLocally } from "@/lib/tabby-local";
 import { parseTabReliably } from "@/lib/tabby-parser";
 import { validateParsedTab } from "@/lib/tabby-schema";
 import type { ParsedTab } from "@/types/tabby";
+import { expenseCategory, settlementProgress, upiPaymentLink } from "@/lib/tabby-settlement";
 
 const sample = (): ParsedTab => ({ title: "Dinner", currency: "INR", participants: [{ id: "a", name: "Ana", upiId: "ana@bank" }, { id: "b", name: "Bob" }, { id: "c", name: "Cia" }], items: [{ id: "food", title: "Food", amount: 30, paidById: "a", splitAmongIds: ["a", "b", "c"] }], sharedTaxes: 0.1 });
 
@@ -22,6 +23,46 @@ describe("precision layer", () => {
   it("honors item-specific recipients", () => { const input = sample(); input.items[0] = { id: "food", title: "Food", amount: 10.01, paidById: "a", splitAmongIds: ["c", "b"] }; input.sharedTaxes = 0; const tab = calculateTabSession(input); expect(tab.participants.map(p => p.totalOwed)).toEqual([0, 5.01, 5]); balanced(tab); });
   it("rejects duplicate IDs and unknown references", () => { const input = sample(); input.items[0] = { id: "bad", title: "Bad", amount: 10, paidById: "unknown", splitAmongIds: ["a"] }; expect(() => calculateTabSession(input)).toThrow(); });
   it("conserves money across 500 generated tabs", () => { for (let i = 1; i <= 500; i++) { const input = sample(); input.sharedTaxes = i / 100; input.items[0] = { id: "food", title: "Food", amount: (i * 137) / 100, paidById: "b", splitAmongIds: ["a", "b", "c"] }; balanced(calculateTabSession(input)); } });
+  it("matches the largest debtor to the largest creditor first", () => {
+    const tab = calculateTabSession({ title: "Matching", currency: "INR", sharedTaxes: 0, participants: ["a", "b", "c", "d"].map(id => ({ id, name: id })), items: [
+      { id: "1", title: "One", amount: 20, paidById: "a", splitAmongIds: ["c"] },
+      { id: "2", title: "Two", amount: 60, paidById: "b", splitAmongIds: ["d"] },
+    ] });
+    expect(tab.transfers[0]).toMatchObject({ from: "d", to: "b", amount: 60 });
+    expect(tab.transfers).toHaveLength(2); balanced(tab);
+  });
+  it("never exceeds N-1 transfers across varied larger tabs", () => {
+    for (let n = 2; n <= 30; n++) {
+      const participants = Array.from({ length: n }, (_, i) => ({ id: `p${i}`, name: `Person ${i}` }));
+      const ids = participants.map(p => p.id);
+      const tab = calculateTabSession({ title: "Group", currency: "INR", sharedTaxes: 0.07, participants, items: participants.map((p, i) => ({ id: `i${i}`, title: "Meal", amount: (i * 173 + 11) / 100, paidById: p.id, splitAmongIds: ids })) });
+      expect(tab.transfers.length).toBeLessThanOrEqual(n - 1); balanced(tab);
+    }
+  });
+});
+
+describe("settlement dashboard helpers", () => {
+  it("tracks amount-weighted progress and zero-debt tabs", () => {
+    const tab = calculateTabSession(sample());
+    expect(settlementProgress(tab.transfers).percentage).toBe(0);
+    tab.transfers[0] = { ...tab.transfers[0], id: "one", from: "b", to: "a", amount: 10.03, isSettled: true };
+    expect(settlementProgress(tab.transfers).percentage).toBe(50);
+    expect(settlementProgress(tab.transfers.map(t => ({ ...t, isSettled: true }))).complete).toBe(true);
+    expect(settlementProgress([])).toMatchObject({ percentage: 100, complete: true });
+  });
+  it("encodes a precise UPI URI and blocks missing IDs or non-INR", () => {
+    const tab = calculateTabSession(sample()); const transfer = tab.transfers[0];
+    if (!transfer) throw new Error("Missing transfer");
+    const link = upiPaymentLink(tab, transfer);
+    expect(link).toContain("upi://pay?");
+    const params = new URLSearchParams(link?.split("?")[1]);
+    expect(params.get("pa")).toBe("ana@bank"); expect(params.get("am")).toBe("10.03"); expect(params.get("cu")).toBe("INR");
+    expect(upiPaymentLink({ ...tab, currency: "USD" }, transfer)).toBeNull();
+    expect(upiPaymentLink({ ...tab, participants: tab.participants.map(p => ({ ...p, upiId: undefined })) }, transfer)).toBeNull();
+  });
+  it("recognizes friendly expense categories", () => {
+    expect(expenseCategory("pizza").icon).toBe("🍕"); expect(expenseCategory("Cab ride").icon).toBe("🚕"); expect(expenseCategory("Utilities").icon).toBe("🏠");
+  });
 });
 
 describe("reliable parsing", () => {
