@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Camera, Check, ImagePlus, LoaderCircle, Plus, ReceiptText, X } from "lucide-react";
+import { FoodLoader } from "@/components/food-loader";
+import { Camera, Check, ImagePlus, Plus, ReceiptText, X } from "lucide-react";
 import { readReceipt } from "@/lib/tabby.functions";
 import { calculateTabSession, fromMinorUnits, toMinorUnits } from "@/lib/tabby-math";
 import type { TabSession } from "@/types/tabby";
@@ -52,7 +53,7 @@ export function ReceiptWorkflow({ open, onOpenChange, currency, current, dark, o
   return <Dialog open={open} onOpenChange={value => { if (!busy) onOpenChange(value); }}><DialogContent className={`tabby-modal receipt-modal${dark ? " dark" : ""}`} onEscapeKeyDown={e => { if (busy) e.preventDefault(); }} onPointerDownOutside={e => { if (busy) e.preventDefault(); }}><DialogTitle>{draft ? "Who ordered what?" : "Bring the bill."}</DialogTitle><DialogDescription>{draft ? "Review receipt amounts and friends before settling." : "JPEG, PNG or WebP · up to 5 MB"}</DialogDescription>
     {!draft && <div className={`receipt-dropzone${dragging ? " is-dragging" : ""}`} onDragOver={e => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={e => { e.preventDefault(); setDragging(false); const file = e.dataTransfer.files[0]; if (file) void choose(file); }}>
       {photo ? <img src={photo.url} alt="Receipt being read" /> : <ImagePlus size={34} />}
-      {busy ? <p role="status"><LoaderCircle className="animate-spin" />Reading your receipt…</p> : <><p>Drop your receipt photo here</p><div className="receipt-upload-actions"><Button variant="tabby" onClick={() => fileRef.current?.click()} aria-label="Choose receipt photo"><ImagePlus />Choose photo</Button><Button variant="receipt" onClick={() => cameraRef.current?.click()} aria-label="Take receipt photo"><Camera />Take photo</Button></div></>}
+      {busy ? <FoodLoader compact /> : <><p>Drop your receipt photo here</p><div className="receipt-upload-actions"><Button variant="tabby" onClick={() => fileRef.current?.click()} aria-label="Choose receipt photo"><ImagePlus />Choose photo</Button><Button variant="receipt" onClick={() => cameraRef.current?.click()} aria-label="Take receipt photo"><Camera />Take photo</Button></div></>}
     </div>}
     <input ref={fileRef} type="file" className="hidden" aria-label="Receipt photo" accept="image/jpeg,image/png,image/webp" onChange={e => { const file = e.target.files?.[0]; if (file) void choose(file); e.target.value = ""; }} />
     <input ref={cameraRef} type="file" className="hidden" aria-label="Camera receipt photo" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={e => { const file = e.target.files?.[0]; if (file) void choose(file); e.target.value = ""; }} />

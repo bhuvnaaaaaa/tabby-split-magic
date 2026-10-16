@@ -11,7 +11,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowRight, Camera, Check, CheckCheck, Heart, LoaderCircle, MessageCircle, Moon, ReceiptText, ShieldCheck, Sun, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import meal from "@/assets/shared-meal.jpg";
+import friends from "@/assets/friends-coffee.png";
+import { FoodLoader, LOADER_MIN_MS, wait } from "@/components/food-loader";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [
@@ -60,7 +61,7 @@ function Index() {
     setError(""); setResult(null); setPreview(false); setLoading(true); setParseNotice("");
     setShared(false); setFriendId(null); history.replaceState(null, "", window.location.pathname);
     try {
-      const parsed = await parseTabReliably(notes, currency, () => parseOnline({ data: { notes, currency } }), !navigator.onLine);
+      const [parsed] = await Promise.all([parseTabReliably(notes, currency, () => parseOnline({ data: { notes, currency } }), !navigator.onLine), wait(LOADER_MIN_MS)]);
       setResult(parsed.session);
       setParseNotice(parsed.warning ?? "");
     } catch (error) { setError(error instanceof Error ? error.message : "We couldn’t read the tab. Please try an example."); }
@@ -78,7 +79,7 @@ function Index() {
     <main>
       {!shared && <section className="intro">
         <div className="eyebrow"><span className="small-dot" /> LESS MATH. MORE MEMORIES.</div>
-        <div className="hero-title"><h1>Good times with friends,<br /> settled without the <em>awkward math.</em></h1><img src={meal} alt="Friends’ shared dinner" className="hero-vignette" /></div>
+        <div className="hero-title"><h1>Good times with friends,<br /> settled without the <em>awkward math.</em></h1><div className="hero-cluster" aria-hidden="true"><img src={friends} width={1024} height={1024} alt="" className="hero-art" /><span className="hero-float f1">☕</span><span className="hero-float f2">🥐</span><span className="hero-float f3">🧾</span></div></div>
         <p className="intro-copy">Paste your dinner notes, trip recap, or upload a bill. We’ll untangle who paid,<br className="desktop-break" /> split shared taxes equally, and give you clean 1-tap links.</p>
       </section>}
       <section className={result ? "workspace has-result" : "workspace"} aria-label="Split a tab">
@@ -92,10 +93,10 @@ function Index() {
         {!shared && <div className="below-input"><span><Check size={14} /> Shared taxes, shared fairly <span className="separator-dot">·</span> No sign-up, no fuss</span><label className="skeleton-toggle"><input type="checkbox" checked={preview} onChange={e => setPreview(e.target.checked)} disabled={loading} />Preview loading</label></div>}
         {shared && error && <p className="form-error" role="alert">{error}</p>}
         {(loading || preview || result) && <section className="results" aria-live="polite" aria-busy={loading || preview}>
-          {loading || preview ? <><div className="results-heading"><h2>A little untangling…</h2><span>Finding the fairest way</span></div><div className="transaction-grid" aria-label="Loading settlements">{[0, 1, 2].map(i => <div className="transaction-card skeleton-card animate-pulse" key={i}><div className="skeleton-avatar" /><div className="skeleton-line" /><div className="skeleton-line short" /><div className="skeleton-button" /></div>)}</div></> : result && <><SettlementDashboard session={result} onChange={updateTab} dark={dark} friendId={friendId} onChooseFriend={() => setIdentityOpen(true)} onShare={shareTab} />{parseNotice && <p className="demo-note" role="status">{parseNotice}</p>}</>}
+          {loading || preview ? <FoodLoader /> : result && <><SettlementDashboard session={result} onChange={updateTab} dark={dark} friendId={friendId} onChooseFriend={() => setIdentityOpen(true)} onShare={shareTab} />{parseNotice && <p className="demo-note" role="status">{parseNotice}</p>}</>}
         </section>}
       </section>
-      <section className="closing"><img src={meal} width={768} height={512} alt="A shared pizza on a lavender plate, with a glass and terracotta napkin" loading="lazy" /><h2>Keep the memories.<br /><span>Not the mental math.</span></h2><p>For the dinners that run late, the trips worth taking,<br />and the people you’d do it all again with.</p><div className="closing-details"><span><ReceiptText /> Any shared expense</span><span><CheckCheck /> A fair, simple split</span><span><MessageCircle /> Less awkward chats</span></div></section>
+      <section className="closing"><h2>Keep the memories.<br /><span>Not the mental math.</span></h2><p>For the dinners that run late, the trips worth taking,<br />and the people you’d do it all again with.</p><div className="closing-details"><span><ReceiptText /> Any shared expense</span><span><CheckCheck /> A fair, simple split</span><span><MessageCircle /> Less awkward chats</span></div></section>
     </main>
     <ReceiptWorkflow open={receiptOpen} onOpenChange={setReceiptOpen} currency={currency} current={result} dark={dark} onComplete={tab => { setResult(tab); setShared(false); setFriendId(null); setParseNotice(""); history.replaceState(null, "", window.location.pathname); }} />
     <Dialog open={identityOpen} onOpenChange={setIdentityOpen}><DialogContent className={`tabby-modal${dark ? " dark" : ""}`}><DialogTitle>Which friend are you?</DialogTitle><DialogDescription>{result?.title}</DialogDescription><div className="identity-friends">{result?.participants.map(p => <Button key={p.id} variant="receipt" aria-label={`I am ${p.name}`} onClick={() => { setFriendId(p.id); setIdentityOpen(false); }}><span className="person-avatar">{p.name.slice(0, 1)}</span>{p.name}</Button>)}</div></DialogContent></Dialog>
