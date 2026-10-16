@@ -11,7 +11,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowRight, Camera, Check, CheckCheck, Heart, LoaderCircle, MessageCircle, Moon, ReceiptText, ShieldCheck, Sun, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import friends from "@/assets/friends-coffee.png";
+import friends from "@/assets/friends-coffee.webp";
 import { FoodLoader, LOADER_MIN_MS, wait } from "@/components/food-loader";
 
 export const Route = createFileRoute("/")({
@@ -78,9 +78,7 @@ function Index() {
     </header>
     <main>
       {!shared && <section className="intro">
-        <div className="eyebrow"><span className="small-dot" /> LESS MATH. MORE MEMORIES.</div>
-        <div className="hero-title"><h1>Good times with friends,<br /> settled without the <em>awkward math.</em></h1><div className="hero-cluster" aria-hidden="true"><img src={friends} width={1024} height={1024} alt="" className="hero-art" /><span className="hero-float f1">☕</span><span className="hero-float f2">🥐</span><span className="hero-float f3">🧾</span></div></div>
-        <p className="intro-copy">Paste your dinner notes, trip recap, or upload a bill. We’ll untangle who paid,<br className="desktop-break" /> split shared taxes equally, and give you clean 1-tap links.</p>
+        <div className="hero-title"><div className="hero-text"><div className="eyebrow"><span className="small-dot" /> LESS MATH. MORE MEMORIES.</div><h1>Good times with friends, settled without the <em>awkward math.</em></h1><p className="intro-copy">Paste your dinner notes, trip recap, or upload a bill. We’ll untangle who paid, split shared taxes equally, and give you clean 1-tap links.</p></div><div className="hero-cluster" aria-hidden="true"><img src={friends} width={560} height={560} alt="" className="hero-art" fetchPriority="high" decoding="async" /></div></div>
       </section>}
       <section className={result ? "workspace has-result" : "workspace"} aria-label="Split a tab">
         {!shared && <div className="input-card">
