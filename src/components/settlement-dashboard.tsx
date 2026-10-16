@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Car, Check, CheckCheck, CircleCheck, Copy, CreditCard, House, MessageCircle, Pencil, Pizza, ReceiptText, Send, Users } from "lucide-react";
+import { ArrowRight, Car, Check, CheckCheck, CircleCheck, Copy, CreditCard, House, MessageCircle, Pencil, Pizza, ReceiptText, Send, Share2, Users } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -11,7 +11,7 @@ import type { TabSession, TransferAction } from "@/types/tabby";
 type EditTarget = { kind: "item"; id: string } | { kind: "person"; id: string } | { kind: "tax" };
 type Tone = "Gentle" | "Lighthearted" | "Direct";
 
-export function SettlementDashboard({ session, onChange, dark }: { session: TabSession; onChange: (tab: TabSession) => void; dark: boolean }) {
+export function SettlementDashboard({ session, onChange, dark, friendId, onChooseFriend, onShare }: { session: TabSession; onChange: (tab: TabSession) => void; dark: boolean; friendId: string | null; onChooseFriend: () => void; onShare: () => void }) {
   const [paymentId, setPaymentId] = useState<string | null>(null);
   const [nudgeId, setNudgeId] = useState<string | null>(null);
   const [tone, setTone] = useState<Tone>("Gentle");
@@ -35,6 +35,9 @@ export function SettlementDashboard({ session, onChange, dark }: { session: TabS
   const editedPerson = edit?.kind === "person" ? session.participants.find(p => p.id === edit.id) : undefined;
   const hasSettled = session.transfers.some(t => t.isSettled);
   const modalClass = `tabby-modal${dark ? " dark" : ""}`;
+  const personalTransfers = session.transfers.filter(t => t.from === friendId && !t.isSettled);
+  const pendingMinor = personalTransfers.reduce((sum, t) => sum + toMinorUnits(t.amount), 0);
+  const incomingMinor = session.transfers.filter(t => t.to === friendId && !t.isSettled).reduce((sum, t) => sum + toMinorUnits(t.amount), 0);
 
   useEffect(() => {
     if (progress.complete && !completeBefore.current && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -99,7 +102,8 @@ export function SettlementDashboard({ session, onChange, dark }: { session: TabS
   const nudgeText = !nudge ? "" : tone === "Gentle" ? `Hey! Settling the weekend tab whenever you get a minute: ${nudgeLink ?? `${money(nudge.amount)} to ${name(nudge.to)}.`}` : tone === "Lighthearted" ? `Coffee on you? Just sending your ${money(nudge.amount)} share from dinner ☕` : `Quick heads-up to settle the ${money(nudge.amount)} tab before tonight.`;
 
   return <div className="settlement-dashboard">
-    <div className="dashboard-title"><div><span className="eyebrow">THE GOOD TIMES, UNTANGLED</span><h2>{session.title}</h2></div><span className="friend-count"><Users size={15} />{session.participants.length} friends</span></div>
+    <div className="dashboard-title"><div><span className="eyebrow">THE GOOD TIMES, UNTANGLED</span><h2>{session.title}</h2></div><div className="dashboard-tools"><span className="friend-count"><Users size={15} />{session.participants.length} friends</span><Button variant="receipt" aria-label="Share with Friends" onClick={onShare}><Share2 />Share with Friends</Button><Button variant="ghost" aria-label="Which friend are you?" onClick={onChooseFriend}><Users /></Button></div></div>
+    {friendId && <section className="personal-balance" aria-label="Your pending balance"><div><span>{name(friendId)}’s pending balance</span><strong>{money(fromMinorUnits(pendingMinor || incomingMinor))}</strong><p>{pendingMinor ? "Left to pay" : incomingMinor ? "Left to receive" : "You’re all settled."}</p></div><div>{personalTransfers.map(t => <Button variant="tabby" key={t.id} aria-label={`Pay ${name(t.to)} ${money(t.amount)}`} disabled={session.currency !== "INR"} onClick={() => startPayment(t)}><CreditCard />Pay {name(t.to)} · {money(t.amount)}</Button>)}</div></section>}
     <div className="metrics-ribbon">
       <div><span>Total Tab Spent</span><strong>{money(tabGrossTotal(session))}</strong></div>
       <div><span>Shared Taxes <small>Split evenly</small></span><strong>{money(tabOverheadTotal(session))}</strong></div>
@@ -108,7 +112,7 @@ export function SettlementDashboard({ session, onChange, dark }: { session: TabS
     {progress.complete && <div className="all-settled" role="status"><span className="success-badge"><CheckCheck size={24} /></span><div><h3>All settled! Zero debts left.</h3><p>Good company. A clean slate.</p></div><CircleCheck className="milestone-check" /></div>}
     <div className="settlement-columns">
       <section className="payout-section" aria-label="Direct Payouts"><div className="section-title"><h3>Direct Payouts</h3><span>{session.transfers.length} payments</span></div>
-        <div className="payout-list">{session.transfers.map(t => <article className={`payout-card${t.isSettled ? " is-settled" : ""}`} key={t.id}>
+        <div className="payout-list">{session.transfers.map(t => <article className={`payout-card${t.isSettled ? " is-settled" : ""}${t.from === friendId && !t.isSettled ? " your-payout" : ""}`} key={t.id}>
           <div className="payout-top"><div className="payout-people"><span className="person-avatar">{name(t.from).slice(0, 1)}</span><ArrowRight size={14} /><span className="person-avatar recipient">{name(t.to).slice(0, 1)}</span></div>{t.isSettled && <span className="settled-badge"><Check size={12} />Settled</span>}</div>
           <div className="payout-amount"><p>{name(t.from)} pays {name(t.to)}</p><strong>{money(t.amount)}</strong></div>
           <div className="payout-actions"><Button variant="tabby" size="sm" onClick={() => startPayment(t)} disabled={t.isSettled || session.currency !== "INR"} title={session.currency !== "INR" ? "UPI supports INR payments only" : undefined}><CreditCard />Pay via UPI</Button><Button variant="receipt" size="sm" onClick={() => { setNudgeId(t.id); setTone("Gentle"); }} disabled={t.isSettled}><MessageCircle />Nudge</Button></div>

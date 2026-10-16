@@ -5,6 +5,7 @@ import { parseTabReliably } from "@/lib/tabby-parser";
 import { validateParsedTab } from "@/lib/tabby-schema";
 import type { ParsedTab } from "@/types/tabby";
 import { expenseCategory, settlementProgress, upiPaymentLink } from "@/lib/tabby-settlement";
+import { decodeTabHash, encodeTabHash } from "@/lib/tabby-share";
 
 const sample = (): ParsedTab => ({ title: "Dinner", currency: "INR", participants: [{ id: "a", name: "Ana", upiId: "ana@bank" }, { id: "b", name: "Bob" }, { id: "c", name: "Cia" }], items: [{ id: "food", title: "Food", amount: 30, paidById: "a", splitAmongIds: ["a", "b", "c"] }], sharedTaxes: 0.1 });
 
@@ -73,4 +74,31 @@ describe("reliable parsing", () => {
   it("falls back on rate limit or network failure for every preset", async () => { for (const example of TABBY_EXAMPLES) { const limited = await parseTabReliably(example.text, "INR", async () => ({ ok: false, status: 429, error: "Rate limited" })); expect(limited.source).toBe("local"); balanced(limited.session); const network = await parseTabReliably(example.text, "INR", async () => { throw new Error("Network unavailable"); }); expect(network.source).toBe("local"); } });
   it("never calls online parsing when offline", async () => { const online = vi.fn(); const result = await parseTabReliably(TABBY_EXAMPLES[0]?.text ?? "", "INR", online, true); expect(online).not.toHaveBeenCalled(); expect(result.source).toBe("local"); });
   it("keeps complex unsupported notes out of regex fallback", () => { expect(() => parseTabLocally("3 of us. Maya paid 30 for food, only Rohan ate.", "INR")).toThrow(); });
+});
+
+describe("shareable snapshots", () => {
+  it("round-trips Unicode, exact cents, UPI and settlement flags", () => {
+    const input = sample(); input.title = "Dinner · मित्रों";
+    const tab = calculateTabSession(input);
+    tab.transfers = tab.transfers.map(t => ({ ...t, isSettled: true }));
+    const hash = encodeTabHash(tab);
+    expect(hash).toMatch(/^#tab=[A-Za-z0-9_-]+$/);
+    expect(decodeTabHash(hash)).toEqual({ ...tab, items: tab.items.map(i => ({ ...i, isOverheadFee: Boolean(i.isOverheadFee) })) });
+  });
+  it("rejects corrupt, oversized and financially invalid snapshots", () => {
+    expect(decodeTabHash("#other")).toBeNull();
+    expect(() => decodeTabHash("#tab=bad!")).toThrow();
+    expect(() => decodeTabHash(`#tab=${"a".repeat(30001)}`)).toThrow();
+    const tab = calculateTabSession(sample());
+    const payload = JSON.parse(atob(encodeTabHash(tab).slice(5).replaceAll("-", "+").replaceAll("_", "/")));
+    payload.i[0][3] = "unknown";
+    expect(() => decodeTabHash(`#tab=${btoa(JSON.stringify(payload))}`)).toThrow();
+  });
+  it("recomputes balances instead of trusting displayed values", () => {
+    const tab = calculateTabSession(sample());
+    const first = tab.participants[0];
+    if (first) first.totalOwed = 999;
+    const restored = decodeTabHash(encodeTabHash(tab));
+    expect(restored?.participants[0]?.totalOwed).toBe(10.04);
+  });
 });
