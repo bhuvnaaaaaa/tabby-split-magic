@@ -77,3 +77,26 @@ export function parseLeniently(notes: string, currency: string): ParsedTab | nul
   const items = pays.map((p, i) => ({ id: `item-${i + 1}`, title: `Paid by ${p.name}`, amount: fromMinorUnits(toMinorUnits(p.amt)), paidById: participants.find(x => x.name.toLowerCase() === p.name.toLowerCase())!.id, splitAmongIds: [...ids], isOverheadFee: false }));
   return { title: "Shared tab", currency, participants, items, sharedTaxes: fromMinorUnits(feesIn(notes)) };
 }
+
+/** Draft fallback: names + activities without numbers become zero-amount items for quick fill. */
+export function parseDraft(notes: string, currency: string): ParsedTab | null {
+  const names = namesIn(notes);
+  const usesUs = /\b(?:us|we|our)\b/i.test(notes);
+  if (!names.length) return null;
+  const people = [...names];
+  if (usesUs && !people.some(n => n.toLowerCase() === "you")) people.push("You");
+  if (people.length < 2) people.push("You");
+  const participants = people.slice(0, 30).map((name, i) => ({ id: `person-${i + 1}`, name }));
+  const idOf = (n: string) => participants.find(p => p.name.toLowerCase() === n.toLowerCase())?.id;
+  const ids = participants.map(p => p.id);
+  const items: ParsedTab["items"] = [];
+  const verb = String.raw`(?:paid\s+for|paid|got|bought|covered|picked\s+up|grabbed|booked|ordered)`;
+  for (const m of notes.matchAll(new RegExp(String.raw`\b(${NAME})\s+${verb}\s+(?:the\s+|a\s+|an\s+|some\s+)?([a-z][a-z\s&'-]{1,30}?)(?=\s+(?:and|then|but|while|split|for)\b|[,.;!\n]|$)`, "gi"))) {
+    const id = idOf(m[1]!); const what = m[2]!.trim();
+    if (!id || !what || /^\d/.test(what)) continue;
+    items.push({ id: `item-${items.length + 1}`, title: what.charAt(0).toUpperCase() + what.slice(1), amount: 0, paidById: id, splitAmongIds: [...ids], isOverheadFee: false });
+    if (items.length >= 100) break;
+  }
+  if (!items.length) items.push({ id: "item-1", title: "Shared expense", amount: 0, paidById: ids[0]!, splitAmongIds: [...ids], isOverheadFee: false });
+  return { title: "Draft tab", currency, participants, items, sharedTaxes: 0 };
+}
