@@ -119,9 +119,7 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
       onChange(updated); record(`${edit.kind === "tax" ? "Shared taxes" : editedItem?.title ?? "Expense"} updated. Split recalculated${hasSettled ? "; settlement marks reset" : ""}.`); setEdit(null); setError("");
     } catch (e) { setError(e instanceof Error ? e.message : "Please check the expense details."); }
   }
-  const nudgeLink = nudge ? upiPaymentLink(session, nudge) : null;
   const appUrl = (() => { try { return typeof window === "undefined" ? "" : `${window.location.origin}${window.location.pathname}${encodeTabHash(session)}`; } catch { return typeof window === "undefined" ? "" : window.location.origin; } })();
-  const appHost = (() => { try { return new URL(appUrl).host; } catch { return ""; } })();
   const isTripTab = /trip|cab|drive|road|ride|fuel|gas|travel|flight|train/i.test(session.title);
   const nudgeText = !nudge ? "" : (() => {
     const friend = name(nudge.from); const amount = money(nudge.amount); const title = session.title;
