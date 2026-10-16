@@ -32,6 +32,18 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
   const [audit, setAudit] = useState<string[]>(["Tab untangled. Balances checked."]);
   const completeBefore = useRef(false);
   const progress = settlementProgress(session.transfers);
+  const [quickIds, setQuickIds] = useState<string[]>([]);
+  const [quickDrafts, setQuickDrafts] = useState<Record<string, string>>({});
+  const firstQuick = useRef<HTMLInputElement>(null);
+  const draftKey = session.items.filter(i => i.amount === 0).map(i => i.id).join(",");
+  useEffect(() => { if (draftKey) { setQuickIds(ids => [...new Set([...ids, ...draftKey.split(",")])]); } }, [draftKey]);
+  useEffect(() => { if (draftKey) firstQuick.current?.focus(); }, [draftKey ? draftKey.split(",")[0] : ""]);
+  function quickFill(id: string, value: string) {
+    setQuickDrafts(d => ({ ...d, [id]: value }));
+    const text = value.trim() || "0";
+    if (!/^\d+(?:\.\d{1,2})?$/.test(text.replaceAll(",", ""))) return;
+    try { onChange(calculateTabSession({ ...session, items: session.items.map(i => i.id === id ? { ...i, amount: fromMinorUnits(toMinorUnits(text)) } : i) })); } catch { /* keep typing */ }
+  }
   const money = (amount: number) => new Intl.NumberFormat("en", { style: "currency", currency: session.currency, maximumFractionDigits: 2 }).format(amount);
   const name = (id: string) => session.participants.find(p => p.id === id)?.name ?? id;
   const payment = session.transfers.find(t => t.id === paymentId);
@@ -121,6 +133,7 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
 
   return <div className="settlement-dashboard">
     <div className="dashboard-title"><div><span className="eyebrow">THE GOOD TIMES, UNTANGLED</span><h2>{session.title}</h2></div><div className="dashboard-tools"><span className="friend-count"><Users size={15} />{session.participants.length} friends</span><Button variant="receipt" aria-label="Share with Friends" onClick={onShare}><Share2 />Share with Friends</Button><Button variant="ghost" aria-label="Which friend are you?" onClick={onChooseFriend}><Users /></Button></div></div>
+    {session.items.some(i => i.amount === 0) && <p className="quick-fill-banner" role="status">Almost untangled! We spotted {session.participants.map(p => p.name).join(", ").replace(/, ([^,]*)$/, " and $1")}, and the expenses. Just enter the amounts below to calculate the split.</p>}
     {friendId && <section className="personal-balance" aria-label="Your pending balance"><div><span>{name(friendId)}’s pending balance</span><strong>{money(fromMinorUnits(pendingMinor || incomingMinor))}</strong><p>{pendingMinor ? "Left to pay" : incomingMinor ? "Left to receive" : "You’re all settled."}</p></div><div>{personalTransfers.map(t => <Button variant="tabby" key={t.id} aria-label={`Pay ${name(t.to)} ${money(t.amount)}`} onClick={() => startPayment(t)}><CreditCard />Pay {name(t.to)} · {money(t.amount)}</Button>)}</div></section>}
     <div className="metrics-ribbon">
       <div><span>Total Tab Spent</span><strong>{money(tabGrossTotal(session))}</strong></div>
@@ -140,7 +153,7 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
         </article>)}</div>
       </section>
       <section className="audit-section" aria-label="Itemized Note & Audit Trail"><div className="section-title"><h3>Itemized Note & Audit Trail</h3><ReceiptText size={17} /></div>
-        <div className="itemized-list">{session.items.map(item => { const category = expenseCategory(item.title); const Icon = category.label === "Dining" ? Pizza : category.label === "Transport" ? Car : category.label === "Home & stays" ? House : ReceiptText; return <div className="expense-row" key={item.id}><span className="category-icon" title={category.label} aria-label={category.label}><Icon size={17} /></span><div className="expense-detail"><strong>{item.title}</strong><span>Paid by {name(item.paidById)}</span><small>{item.isOverheadFee ? "Split evenly · everyone" : item.splitAmongIds.map(name).join(", ")}</small></div><span className="item-amount">{money(item.amount)}</span><Button size="icon" variant="ghost" aria-label={`Edit ${item.title}`} title={`Edit ${item.title}`} onClick={() => startEdit({ kind: "item", id: item.id })}><Pencil /></Button></div>; })}
+        <div className="itemized-list">{session.items.map(item => { const category = expenseCategory(item.title); const Icon = category.label === "Dining" ? Pizza : category.label === "Transport" ? Car : category.label === "Home & stays" ? House : ReceiptText; return <div className="expense-row" key={item.id}><span className="category-icon" title={category.label} aria-label={category.label}><Icon size={17} /></span><div className="expense-detail"><strong>{item.title}</strong><span>Paid by {name(item.paidById)}</span><small>{item.isOverheadFee ? "Split evenly · everyone" : item.splitAmongIds.map(name).join(", ")}</small></div>{quickIds.includes(item.id) ? <input className="quick-amount" ref={item.id === quickIds.find(q => session.items.some(i => i.id === q && i.amount === 0)) ? firstQuick : undefined} inputMode="decimal" placeholder="0" aria-label={`Amount for ${item.title}`} value={quickDrafts[item.id] ?? (item.amount ? String(item.amount) : "")} onChange={e => quickFill(item.id, e.target.value)} /> : <span className="item-amount">{money(item.amount)}</span>}<Button size="icon" variant="ghost" aria-label={`Edit ${item.title}`} title={`Edit ${item.title}`} onClick={() => startEdit({ kind: "item", id: item.id })}><Pencil /></Button></div>; })}
           <div className="expense-row tax-row"><span className="category-icon"><ReceiptText size={17} /></span><div className="expense-detail"><strong>Shared taxes & fees</strong><span>Split evenly · everyone</span></div><span className="item-amount">{money(session.sharedTaxes)}</span><Button size="icon" variant="ghost" aria-label="Edit shared taxes" title="Edit shared taxes" onClick={() => startEdit({ kind: "tax" })}><Pencil /></Button></div>
         </div>
         <p className="allocation-note">Odd paise or cents go to {session.participants[0]?.name}. Unassigned taxes are credited to {session.participants[0]?.name}.</p>
