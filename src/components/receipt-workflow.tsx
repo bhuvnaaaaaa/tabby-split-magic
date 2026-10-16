@@ -28,10 +28,11 @@ export function ReceiptWorkflow({ open, onOpenChange, currency, current, dark, o
   async function choose(file: File) {
     if (active.current) return;
     setError("");
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5_000_000 || !file.size) { setError("Choose a JPEG, PNG or WebP receipt photo smaller than 5 MB."); return; }
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || !file.size) { setError("Choose a JPEG, PNG or WebP receipt photo."); return; }
     setPhoto({ name: file.name, url: URL.createObjectURL(file) }); setDraft(null); setBusy(true); active.current = true;
     try {
-      const image = await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => typeof reader.result === "string" ? resolve(reader.result) : reject(new Error("Couldn’t read this image.")); reader.onerror = () => reject(new Error("Couldn’t read this image.")); reader.readAsDataURL(file); });
+      // Phone photos are often 5-12 MB; shrink them on-device so every receipt fits the reader.
+      const image = await shrinkImage(file);
       const result = await parse({ data: { image, currency: currency as "INR" | "USD" | "EUR" } });
       if (!result.ok) throw new Error(result.error);
       const participants = current?.participants ?? result.session.participants;
