@@ -48,6 +48,7 @@ export function SettlementDashboard({ session, onChange, dark }: { session: TabS
       return () => { cancelled = true; };
     }
     completeBefore.current = progress.complete;
+    return undefined;
   }, [progress.complete]);
 
   function record(message: string) { setAudit(previous => [message, ...previous].slice(0, 20)); }
@@ -63,7 +64,15 @@ export function SettlementDashboard({ session, onChange, dark }: { session: TabS
   function saveUpi(id: string, value: string) {
     const upiId = value.trim();
     if (upiId && !/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$/.test(upiId)) { setError("Enter a valid UPI ID, such as name@bank."); return false; }
-    onChange({ ...session, participants: session.participants.map(p => p.id === id ? { ...p, upiId: upiId || undefined } : p), transfers: session.transfers.map(t => t.to === id ? { ...t, toUpi: upiId || undefined } : t) });
+    onChange({ ...session, participants: session.participants.map(p => {
+      if (p.id !== id) return p;
+      const { upiId: previous, ...details } = p;
+      return upiId ? { ...details, upiId } : details;
+    }), transfers: session.transfers.map(t => {
+      if (t.to !== id) return t;
+      const { toUpi: previous, ...details } = t;
+      return upiId ? { ...details, toUpi: upiId } : details;
+    }) });
     record(`${name(id)}’s UPI ID updated.`); setError(""); return true;
   }
   function startEdit(target: EditTarget) {

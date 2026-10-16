@@ -58,7 +58,7 @@ describe("settlement dashboard helpers", () => {
     const params = new URLSearchParams(link?.split("?")[1]);
     expect(params.get("pa")).toBe("ana@bank"); expect(params.get("am")).toBe("10.03"); expect(params.get("cu")).toBe("INR");
     expect(upiPaymentLink({ ...tab, currency: "USD" }, transfer)).toBeNull();
-    expect(upiPaymentLink({ ...tab, participants: tab.participants.map(p => ({ ...p, upiId: undefined })) }, transfer)).toBeNull();
+    expect(upiPaymentLink({ ...tab, participants: tab.participants.map(({ upiId, ...p }) => p) }, transfer)).toBeNull();
   });
   it("recognizes friendly expense categories", () => {
     expect(expenseCategory("pizza").icon).toBe("🍕"); expect(expenseCategory("Cab ride").icon).toBe("🚕"); expect(expenseCategory("Utilities").icon).toBe("🏠");
