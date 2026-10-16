@@ -122,16 +122,18 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
   const nudgeLink = nudge ? upiPaymentLink(session, nudge) : null;
   const appUrl = (() => { try { return typeof window === "undefined" ? "" : `${window.location.origin}${window.location.pathname}${encodeTabHash(session)}`; } catch { return typeof window === "undefined" ? "" : window.location.origin; } })();
   const appHost = (() => { try { return new URL(appUrl).host; } catch { return ""; } })();
-  const nudgeIntro = !nudge ? "" : tone === "Casual" ? "" : tone === "Playful" ? "Coffee on you? ☕🍕 " : "Per my last pizza 📊, kindly action this by EOD. ";
-  const nudgeText = !nudge ? "" : `${nudgeIntro}Hey ${name(nudge.from)}! Here’s your split of ${money(nudge.amount)} for ${session.title} on Tabby:\n👉 Pay via 1-tap: ${appUrl}\nLet’s settle up whenever you can! ✨`;
+  const isTripTab = /trip|cab|drive|road|ride|fuel|gas|travel|flight|train/i.test(session.title);
+  const nudgeText = !nudge ? "" : (() => {
+    const friend = name(nudge.from); const amount = money(nudge.amount); const title = session.title;
+    if (tone === "Casual") return `Hey ${friend}! Dropping your ${amount} share for ${title} whenever you get a minute — no rush at all! ✨ ${appUrl}`;
+    if (tone === "Playful") return isTripTab
+      ? `Gas money or snacks next time? 😄 Settle your ${amount} for ${title} right here: ${appUrl}`
+      : `My bank account told me to ping you 🥲 Send that ${amount} from ${title} whenever you can! ${appUrl}`;
+    return `Per our verbal alignment regarding ${title} logistics, circling back to close the loop on your outstanding ${amount} deliverable. Best regards! 📈 ${appUrl}`;
+  })();
+  const nudgeParts = nudgeText && appUrl && nudgeText.includes(appUrl) ? nudgeText.split(appUrl) : null;
   function sendWhatsApp() { const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(nudgeText)}`; const win = window.open(whatsappUrl, "_blank", "noopener,noreferrer"); if (!win) window.location.href = whatsappUrl; }
-  async function sendNudge() {
-    if (typeof navigator !== "undefined" && navigator.share) {
-      try { await navigator.share({ title: `Tabby Split: ${session.title}`, text: nudgeText }); return; } catch { return; }
-    }
-    sendWhatsApp();
-  }
-  async function copyNudge() { try { await navigator.clipboard.writeText(nudgeText); toast.success("Copied to clipboard!"); } catch { toast.error("Couldn’t copy — long-press the message to copy it."); } }
+  async function copyNudge() { try { await navigator.clipboard.writeText(nudgeText); toast.success("Copied to clipboard! Ready to paste anywhere ✨"); } catch { toast.error("Couldn’t copy — long-press the message to copy it."); } }
   async function copyUpi(upi: string) { try { await navigator.clipboard.writeText(upi); toast.success("UPI ID copied"); } catch { toast.error("Couldn’t copy — select the UPI ID and copy it."); } }
   function paidOtherWay(t: TransferAction) {
     if (friendId !== t.to) { toast(`Only ${name(t.to)} can confirm this payment.`, { description: `Ask ${name(t.to)} to open the tab, choose their name, and mark it settled.` }); return; }
