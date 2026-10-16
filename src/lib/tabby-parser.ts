@@ -6,6 +6,8 @@ export type OnlineParseResult = { ok: true; session: TabSession } | { ok: false;
 export type ParseResult = { session: TabSession; source: "online" | "local"; warning?: string };
 
 export async function parseTabReliably(notes: string, currency: string, online: () => Promise<OnlineParseResult>, isOffline = false): Promise<ParseResult> {
+  // Fast path: notes the on-device reader understands are split instantly, no network round-trip.
+  try { return { session: calculateTabSession(parseTabLocally(notes, currency)), source: "local" }; } catch { /* fall through to online reading */ }
   let warning = isOffline ? "You’re offline. This tab was split on your device." : "";
   if (!isOffline) {
     try {
