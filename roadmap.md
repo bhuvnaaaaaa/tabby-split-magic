@@ -13,3 +13,4 @@
 - [x] Polish labels, keyboard focus, and mobile touch targets; 23 tests pass and live flows checked.
 - [x] Personality pass: hero illustration, food loader, payment map, tone tags, new nudge tones, recap story card, full confetti.
 - [x] Fine-tune layout: hero flex alignment, compact phone currency pill, centered notes card, even chip spacing, typing box above the phone fold.
+- [x] Polish nudge modal: no side scroll, plain conversational bubble text, steady spacing, slimmer action buttons; link still sent.

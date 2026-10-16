@@ -129,7 +129,7 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
       : `My bank account told me to ping you 🥲 Send that ${amount} from ${title} whenever you can! ${appUrl}`;
     return `Per our verbal alignment regarding ${title} logistics, circling back to close the loop on your outstanding ${amount} deliverable. Best regards! 📈 ${appUrl}`;
   })();
-  const nudgeParts = nudgeText && appUrl && nudgeText.includes(appUrl) ? nudgeText.split(appUrl) : null;
+  const nudgeBubbleText = nudgeText ? nudgeText.replace(appUrl, "").replace(/\s+/g, " ").trim() : "";
   function sendWhatsApp() { const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(nudgeText)}`; const win = window.open(whatsappUrl, "_blank", "noopener,noreferrer"); if (!win) window.location.href = whatsappUrl; }
   async function copyNudge() { try { await navigator.clipboard.writeText(nudgeText); toast.success("Copied to clipboard! Ready to paste anywhere ✨"); } catch { toast.error("Couldn’t copy — long-press the message to copy it."); } }
   async function copyUpi(upi: string) { try { await navigator.clipboard.writeText(upi); toast.success("UPI ID copied"); } catch { toast.error("Couldn’t copy — select the UPI ID and copy it."); } }
@@ -178,16 +178,14 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
     <Sheet open={Boolean(nudge)} onOpenChange={open => { if (!open) setNudgeId(null); }}>
       <SheetContent side="bottom" className={`${modalClass} nudge-sheet`}>
         <div className="sheet-handle" />
-        <SheetTitle>A little nudge, no awkwardness.</SheetTitle>
+        <SheetTitle className="nudge-title">A little nudge, no awkwardness.</SheetTitle>
         <SheetDescription className="sr-only">{nudge ? `A note for ${name(nudge.from)} · ${money(nudge.amount)}` : ""}</SheetDescription>
         {nudge && <div className="nudge-recipient"><span className="nudge-recipient-avatar" aria-hidden="true">{name(nudge.from).slice(0, 1)}</span>For&nbsp;<strong>{name(nudge.from)}</strong>&nbsp;·&nbsp;{money(nudge.amount)}</div>}
         <div className="tone-toggle" aria-label="Nudge tone">
           {TONES.map(value => <button key={value} type="button" className={`tone-pill${tone === value ? " active" : ""}`} aria-pressed={tone === value} onClick={() => setTone(value)}>{TONE_LABELS[value]}</button>)}
         </div>
         {nudge && <div className="nudge-bubble">
-          <p className="bubble-line">
-            {nudgeParts ? <>{nudgeParts[0]}<span className="bubble-link"><span aria-hidden="true">⚡</span>1-Tap Settle ➔</span>{nudgeParts[1]}</> : nudgeText}
-          </p>
+          <p className="bubble-line">{nudgeBubbleText}</p>
           <span className="bubble-meta">Just now · Delivered <CheckCheck size={12} aria-hidden="true" /></span>
         </div>}
         <div className="nudge-actions">
