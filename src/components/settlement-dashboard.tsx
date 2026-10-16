@@ -192,9 +192,14 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
           <span className="bubble-meta">Just now · <CheckCheck size={12} aria-hidden="true" /></span>
         </div>}
         <div className="nudge-actions">
-          <Button variant="tabby" asChild className="whatsapp-send"><a href={`https://wa.me/?text=${encodeURIComponent(nudgeText)}`} target="_blank" rel="noopener noreferrer" onClick={e => { e.preventDefault(); sendWhatsApp(); }}>💬 Send via WhatsApp</a></Button>
+          <Button variant="tabby" className="nudge-send" onClick={() => void sendNudge()}>💬 Send Nudge</Button>
+          <div className="nudge-app-row">
+            <Button variant="receipt" asChild><a href={`sms:&body=${encodeURIComponent(nudgeText)}`} aria-label="Send nudge via iMessage or SMS">💬 iMessage / SMS</a></Button>
+            <Button variant="receipt" asChild className="wa-send"><a href={`https://wa.me/?text=${encodeURIComponent(nudgeText)}`} target="_blank" rel="noopener noreferrer" aria-label="Send nudge via WhatsApp" onClick={e => { e.preventDefault(); sendWhatsApp(); }}>📱 WhatsApp</a></Button>
+          </div>
           <Button variant="receipt" onClick={() => void copyNudge()}>📋 Copy Text</Button>
         </div>
+        <p className="nudge-hint">Friendly social nudge — send it from any chat app.</p>
       </SheetContent>
     </Sheet>
     <Dialog open={Boolean(edit)} onOpenChange={open => { if (!open) setEdit(null); }}><DialogContent className={modalClass}><DialogTitle>{edit?.kind === "person" ? `${editedPerson?.name}’s payment details` : edit?.kind === "tax" ? "Edit shared taxes" : `Edit ${editedItem?.title ?? "expense"}`}</DialogTitle><DialogDescription>{edit?.kind === "person" ? "UPI payment details" : "Expense details"}</DialogDescription><form onSubmit={saveEdit} className="edit-form">
