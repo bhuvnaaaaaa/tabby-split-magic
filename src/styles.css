@@ -275,15 +275,26 @@ footer svg { color: var(--terracotta); }
 .payment-qr svg { display: block; width: 100%; height: auto; }
 .qr-recipient { font-size: 12px; color: var(--muted-foreground); overflow-wrap: anywhere; }
 .payment-note { font-size: 10px; line-height: 1.7; color: var(--muted-foreground); }
-.nudge-sheet { left: 50%; right: auto; transform: translateX(-50%); width: min(560px, calc(100% - 24px)); max-width: 560px; border-radius: 8px 8px 0 0; bottom: 0; display: grid; gap: 16px; }
+.nudge-sheet { left: 50%; right: auto; transform: translateX(-50%); width: min(560px, calc(100% - 24px)); max-width: 560px; border-radius: 24px 24px 0 0; bottom: 0; display: grid; gap: 14px; border: 1px solid var(--border); box-shadow: 0 24px 60px -24px color-mix(in oklab, var(--primary) 30%, transparent); }
 .sheet-handle { width: 36px; height: 4px; border-radius: 4px; background: var(--border); margin: -9px auto 3px; }
-.tone-toggle { display: grid; grid-template-columns: repeat(3, 1fr); padding: 4px; background: var(--secondary); border-radius: 6px; gap: 3px; }
-.tone-toggle button { font-size: 11px; padding-inline: 6px; }
-.nudge-preview { border-left: 2px solid var(--terracotta); padding: 8px 0 8px 16px; font-size: 13px; line-height: 1.9; overflow-wrap: anywhere; min-height: 95px; white-space: pre-line; }
+.nudge-recipient { display: inline-flex; align-items: center; gap: 8px; width: fit-content; background: color-mix(in oklab, var(--primary) 10%, var(--card)); border: 1px solid color-mix(in oklab, var(--primary) 20%, transparent); border-radius: 999px; padding: 5px 14px 5px 6px; font-size: 13px; color: var(--foreground); }
+.nudge-recipient-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--primary); color: var(--primary-foreground); display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+.nudge-recipient strong { font-weight: 700; }
+.tone-toggle { display: flex; flex-wrap: wrap; gap: 8px; }
+.tone-pill { border-radius: 999px; padding: 0 16px; min-height: 40px; display: inline-flex; align-items: center; font-size: 13px; font-weight: 600; font-family: var(--font-sans); background: color-mix(in oklab, var(--primary) 4%, var(--card)); border: 1px solid var(--border); color: var(--foreground); cursor: pointer; transition: transform 0.15s ease, background 0.15s ease; }
+.tone-pill:hover { background: color-mix(in oklab, var(--primary) 10%, var(--card)); }
+.tone-pill.active { background: var(--primary); border-color: var(--primary); color: var(--primary-foreground); transform: scale(1.04); }
+.nudge-bubble { display: grid; gap: 8px; background: #f4fbf7; border-radius: 18px; border-top-left-radius: 6px; padding: 14px 16px 8px; font-size: 13px; line-height: 1.6; color: var(--foreground); border: 1px solid color-mix(in oklab, var(--success) 25%, transparent); }
+.nudge-bubble .bubble-line { margin: 0; overflow-wrap: anywhere; }
+.nudge-bubble strong { font-weight: 700; }
+.bubble-link { width: fit-content; display: inline-flex; align-items: center; gap: 6px; background: var(--card); border: 1px solid color-mix(in oklab, var(--primary) 30%, transparent); border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 600; color: var(--primary); }
+.bubble-meta { justify-self: end; display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: var(--muted-foreground); }
+.nudge-sheet.dark .nudge-bubble { background: color-mix(in oklab, var(--success) 10%, var(--card)); border-color: var(--border); }
 .nudge-actions { display: grid; gap: 10px; }
-.nudge-actions > * { width: 100%; min-height: 48px; justify-content: center; }
-.nudge-actions .whatsapp-send { --primary: #25d366; --primary-foreground: #ffffff; background: #25d366; color: #ffffff; font-weight: 700; }
-.nudge-actions .whatsapp-send:hover { background: #1eb855; }
+.nudge-actions > * { width: 100%; min-height: 48px; justify-content: center; border-radius: 14px; }
+.nudge-actions .whatsapp-send { --primary: #128c7e; --primary-foreground: #ffffff; background: #128c7e; color: #ffffff; font-weight: 700; box-shadow: 0 10px 24px -10px rgba(18, 140, 126, 0.6); }
+.nudge-actions .whatsapp-send:hover { background: #0f7f71; }
+@media (min-width: 760px) { .nudge-sheet { bottom: 32px; border-radius: 24px; } }
 .edit-form { display: grid; gap: 18px; }
 .edit-form label, .edit-form legend { font-size: 12px; font-weight: 500; }
 .edit-form input:not([type=checkbox]), .edit-form select { display: block; width: 100%; background: var(--background); color: var(--foreground); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; margin-top: 8px; outline-color: var(--primary); }
@@ -390,6 +401,7 @@ a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visib
   .personal-balance > div:last-child { flex-direction: column; }
   .assignment-item-heading label { flex-wrap: wrap; }
   .receipt-friends input { min-height: 48px; }
+  .tone-pill { min-height: 48px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
