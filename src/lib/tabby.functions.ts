@@ -25,6 +25,9 @@ export const readReceipt = createServerFn({ method: "POST" })
     if (!apiKey) return { ok: false as const, status: 503, error: "Receipt reading is not configured yet." };
     const { parseTabWithAI } = await import("./tabby-parser.server");
     const result = await parseTabWithAI("", data.currency, getRequest(), apiKey, data.image);
-    if (!result.ok) setResponseStatus(result.status);
+    if (!result.ok) {
+      setResponseStatus(result.status);
+      if (result.status === 422) return { ok: false as const, status: 422, error: "Couldn’t read this receipt clearly. Try a sharper, well-lit close-up with the whole bill in frame." };
+    }
     return result;
   });
