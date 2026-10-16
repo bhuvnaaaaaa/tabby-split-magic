@@ -125,12 +125,17 @@
   ::selection { background: var(--secondary); color: var(--primary); }
 }
 .tabby-app { min-height: 100vh; background: var(--background); color: var(--foreground); transition: background 200ms, color 200ms; }
-.site-header { max-width: 1152px; height: 100px; margin: auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+.site-header { max-width: 1024px; height: 100px; margin: auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--border); }
 .wordmark { font-family: var(--font-display); font-weight: 700; font-size: 39px; display: inline-flex; align-items: center; gap: 5px; }
 .logo-mark { width: 21px; height: 21px; background: var(--terracotta); color: var(--card); border-radius: 50%; display: grid; place-items: center; margin-top: 15px; }
 .header-controls { display: flex; align-items: center; gap: 18px; color: var(--muted-foreground); }
 .currency-switch { display: flex; padding: 4px; background: var(--secondary); border: 1px solid var(--border); border-radius: 8px; gap: 2px; }
 .currency-switch button { font-size: 11px; height: 29px; padding: 0 12px; }
+.currency-compact { position: relative; display: none; }
+.currency-pill { gap: 6px; padding: 0 12px; height: 32px; font-size: 12px; background: var(--secondary); border: 1px solid var(--border); border-radius: 999px; color: var(--foreground); }
+.menu-backdrop { position: fixed; inset: 0; border: 0; background: none; cursor: default; z-index: 40; }
+.currency-menu { position: absolute; top: calc(100% + 8px); right: 0; z-index: 41; display: flex; flex-direction: column; gap: 2px; padding: 5px; min-width: 116px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--ambient-shadow); }
+.currency-menu button { height: 36px; justify-content: flex-start; font-size: 12px; padding: 0 10px; }
 .header-divider { height: 23px; width: 1px; background: var(--border); }
 .intro { text-align: center; padding: 65px 20px 35px; }
 .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 600; letter-spacing: 0; color: var(--muted-foreground); }
@@ -139,8 +144,8 @@ h1, h2 { font-family: var(--font-display); letter-spacing: 0; }
 .intro h1 { font-size: 50px; font-weight: 500; line-height: 1.2; margin: 20px auto 19px; max-width: 850px; }
 .intro h1 em { color: var(--primary); font-weight: 400; }
 .intro-copy { color: var(--muted-foreground); font-size: 13px; line-height: 1.9; }
-.workspace { max-width: 790px; margin: auto; padding: 0 20px; }
-.input-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 28px; box-shadow: var(--ambient-shadow); }
+.workspace { max-width: 768px; margin: auto; padding: 0 20px; }
+.input-card { max-width: 728px; margin: 24px auto 0; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 28px; box-shadow: var(--ambient-shadow); }
 .input-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
 .input-icon { width: 39px; height: 39px; display: grid; place-items: center; border-radius: 8px; background: var(--secondary); color: var(--primary); }
 .input-heading h2 { font-size: 21px; font-weight: 500; }
@@ -152,8 +157,8 @@ textarea::placeholder { color: var(--muted-foreground); opacity: .8; }
 textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--secondary); }
 .examples { margin-top: 17px; }
 .examples > span { display: block; font-size: 10px; color: var(--muted-foreground); margin-bottom: 10px; }
-.example-buttons { display: flex; flex-wrap: wrap; gap: 7px; }
-.example-buttons button { font-size: 10px; padding: 0 10px; height: 28px; gap: 7px; }
+.example-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.example-buttons button { font-size: 10px; padding: 0 12px; height: 30px; gap: 7px; }
 .example-buttons button svg { width: 11px; height: 11px; }
 .input-actions { display: flex; align-items: center; gap: 10px; padding-top: 23px; margin-top: 21px; border-top: 1px solid var(--border); }
 .input-actions button { height: 44px; font-size: 12px; padding: 0 21px; }
@@ -390,12 +395,12 @@ a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visib
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
 /* Hero illustration cluster */
-.hero-title { display: grid; grid-template-columns: 1fr 300px; align-items: center; gap: 48px; text-align: left; max-width: 1000px; }
+.hero-title { display: flex; align-items: center; justify-content: space-between; gap: 48px; text-align: left; max-width: 1024px; margin-inline: auto; }
 .hero-text .eyebrow, .hero-text .intro-copy { justify-content: flex-start; text-align: left; margin-inline: 0; }
 .hero-text h1 { margin: 18px 0 0; }
 @media (max-width: 760px) { .hero-text h1 { margin-inline: auto; } }
 .hero-text .intro-copy { margin-top: 20px; max-width: 520px; }
-.hero-cluster { position: relative; width: 300px; height: 300px; }
+.hero-cluster { position: relative; flex: 0 0 auto; width: 320px; height: 320px; }
 .hero-art { width: 100%; height: 100%; object-fit: contain; animation: hero-bob 6s ease-in-out infinite; }
 .hero-float { position: absolute; font-size: 26px; animation: hero-float 4s ease-in-out infinite; filter: drop-shadow(0 4px 6px color-mix(in oklab, var(--foreground) 12%, transparent)); }
 .hero-float.f1 { top: 4%; left: -6%; }

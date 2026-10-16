@@ -9,7 +9,7 @@ import { decodeTabHash, encodeTabHash } from "@/lib/tabby-share";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Camera, Check, CheckCheck, Heart, LoaderCircle, MessageCircle, Moon, ReceiptText, ShieldCheck, Sun, X } from "lucide-react";
+import { ArrowRight, Camera, Check, CheckCheck, ChevronDown, Heart, LoaderCircle, MessageCircle, Moon, ReceiptText, ShieldCheck, Sun, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import friends from "@/assets/friends-coffee.webp";
@@ -47,6 +47,7 @@ function Index() {
   const [shared, setShared] = useState(false);
   const parseOnline = useServerFn(parseTab);
   const [parseNotice, setParseNotice] = useState("");
+  const [currencyMenuOpen, setCurrencyMenuOpen] = useState(false);
   useEffect(() => {
     function hydrate() { try { const tab = decodeTabHash(window.location.hash); if (tab) { setResult(tab); setCurrency(tab.currency as "INR" | "USD" | "EUR"); setShared(true); setFriendId(null); setIdentityOpen(true); setError(""); } } catch (e) { setError(e instanceof Error ? e.message : "Couldn’t open this tab link."); } }
     hydrate(); window.addEventListener("hashchange", hydrate); return () => window.removeEventListener("hashchange", hydrate);
@@ -76,6 +77,10 @@ function Index() {
       <a href="/" className="wordmark" aria-label="Tabby home">tabby<span className="logo-mark"><ReceiptText size={13} strokeWidth={1.8} /></span></a>
       <div className="header-controls">
         <div className="currency-switch" aria-label="Currency">{CURRENCIES.map(({ code, symbol }) => <Button key={code} size="sm" variant={currency === code ? "currency" : "ghost"} aria-pressed={currency === code} onClick={() => setCurrency(code)}>{symbol} <span>{code}</span></Button>)}</div>
+        <div className="currency-compact">
+          <Button variant="ghost" size="sm" className="currency-pill" aria-haspopup="true" aria-expanded={currencyMenuOpen} aria-label="Change currency" onClick={() => setCurrencyMenuOpen(o => !o)}>{CURRENCIES.find(c => c.code === currency)?.symbol} {currency} <ChevronDown size={13} /></Button>
+          {currencyMenuOpen && <><button type="button" className="menu-backdrop" aria-hidden="true" tabIndex={-1} onClick={() => setCurrencyMenuOpen(false)} /><div className="currency-menu" role="menu">{CURRENCIES.map(({ code, symbol }) => <Button key={code} role="menuitemradio" aria-checked={currency === code} variant={currency === code ? "currency" : "ghost"} onClick={() => { setCurrency(code); setCurrencyMenuOpen(false); }}>{symbol} {code}</Button>)}</div></>}
+        </div>
         <span className="header-divider" />
         <Button variant="ghost" size="icon" aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} title={dark ? "Light theme" : "Dark theme"} onClick={() => { const next = !dark; document.documentElement.classList.toggle("dark", next); setDark(next); }}>{dark ? <Sun /> : <Moon />}</Button>
       </div>
