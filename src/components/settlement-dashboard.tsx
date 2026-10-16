@@ -15,6 +15,7 @@ import type { TabSession, TransferAction } from "@/types/tabby";
 type EditTarget = { kind: "item"; id: string } | { kind: "person"; id: string } | { kind: "tax" };
 type Tone = "Casual" | "Playful" | "Corporate joke";
 const TONES: Tone[] = ["Casual", "Playful", "Corporate joke"];
+const TONE_LABELS: Record<Tone, string> = { Casual: "☕ Casual", Playful: "🍕 Playful", "Corporate joke": "👔 The Corporate" };
 
 export function SettlementDashboard({ session, onChange, dark, friendId, onChooseFriend, onShare }: { session: TabSession; onChange: (tab: TabSession) => void; dark: boolean; friendId: string | null; onChooseFriend: () => void; onShare: () => void }) {
   const [paymentId, setPaymentId] = useState<string | null>(null);
@@ -120,9 +121,9 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
   }
   const nudgeLink = nudge ? upiPaymentLink(session, nudge) : null;
   const appUrl = (() => { try { return typeof window === "undefined" ? "" : `${window.location.origin}${window.location.pathname}${encodeTabHash(session)}`; } catch { return typeof window === "undefined" ? "" : window.location.origin; } })();
+  const appHost = (() => { try { return new URL(appUrl).host; } catch { return ""; } })();
   const nudgeIntro = !nudge ? "" : tone === "Casual" ? "" : tone === "Playful" ? "Coffee on you? ☕🍕 " : "Per my last pizza 📊, kindly action this by EOD. ";
   const nudgeText = !nudge ? "" : `${nudgeIntro}Hey ${name(nudge.from)}! Here’s your split of ${money(nudge.amount)} for ${session.title} on Tabby:\n👉 Pay via 1-tap: ${appUrl}\nLet’s settle up whenever you can! ✨`;
-  const nudgePreview = !nudge ? "" : nudgeText.replace(appUrl, "🔗 your tab link");
   function sendWhatsApp() { const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(nudgeText)}`; const win = window.open(whatsappUrl, "_blank", "noopener,noreferrer"); if (!win) window.location.href = whatsappUrl; }
   async function copyNudge() { try { await navigator.clipboard.writeText(nudgeText); toast.success("Copied to clipboard!"); } catch { toast.error("Couldn’t copy — long-press the message to copy it."); } }
   async function copyUpi(upi: string) { try { await navigator.clipboard.writeText(upi); toast.success("UPI ID copied"); } catch { toast.error("Couldn’t copy — select the UPI ID and copy it."); } }
