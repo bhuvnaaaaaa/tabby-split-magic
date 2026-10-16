@@ -54,11 +54,11 @@ export function encodeTabHash(tab: TabSession): string {
       return item.isOverheadFee ? [...base, true] : base;
     }),
   };
-  if (tab.participants.some(p => p.upiId)) payload.u = tab.participants.map(p => p.upiId ?? "");
+  if (tab.participants.some(p => p.upiId)) payload["u"] = tab.participants.map(p => p.upiId ?? "");
   const taxMinor = toMinorUnits(tab.sharedTaxes);
-  if (taxMinor) payload.tax = taxMinor;
+  if (taxMinor) payload["tax"] = taxMinor;
   const settled = tab.transfers.filter(t => t.isSettled).map(t => [indexOf(t.from), indexOf(t.to), toMinorUnits(t.amount)]);
-  if (settled.length) payload.s = settled;
+  if (settled.length) payload["s"] = settled;
   payloadV2Schema.parse(payload);
   const encoded = toBase64Url(new TextEncoder().encode(JSON.stringify(payload)));
   if (encoded.length > MAX_ENCODED) throw new Error("This tab is too large for a share link. Reduce the number of items.");
