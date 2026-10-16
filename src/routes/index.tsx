@@ -35,7 +35,6 @@ function Index() {
   const [dark, setDark] = useState(false);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
-  const [preview, setPreview] = useState(false);
   const [result, setResult] = useState<TabSession | null>(null);
   const [error, setError] = useState("");
   const [receiptOpen, setReceiptOpen] = useState(false);
@@ -63,7 +62,7 @@ function Index() {
   }
   async function untangle() {
     if (!notes.trim()) { setError("Add a few notes about who paid and how many friends shared the tab."); return; }
-    setError(""); setResult(null); setPreview(false); setLoading(true); setParseNotice("");
+    setError(""); setResult(null); setLoading(true); setParseNotice("");
     setShared(false); setFriendId(null); history.replaceState(null, "", window.location.pathname);
     try {
       const [parsed] = await Promise.all([parseTabReliably(notes, currency, () => parseOnline({ data: { notes, currency } }), !navigator.onLine), wait(LOADER_MIN_MS)]);
@@ -97,10 +96,10 @@ function Index() {
           {error && <p className="form-error" role="alert">{error}</p>}
           <div className="input-actions"><Button variant="tabby" size="lg" disabled={loading} onClick={untangle}>{loading ? <><LoaderCircle className="animate-spin" /> Untangling…</> : <>Untangle Tab <ArrowRight /></>}</Button><Button variant="receipt" size="lg" onClick={() => setReceiptOpen(true)}><Camera />Upload Receipt</Button><span className="private-note"><ShieldCheck size={14} />Just between friends.</span></div>
         </div>}
-        {!shared && <div className="below-input"><span><Check size={14} /> Shared taxes, shared fairly <span className="separator-dot">·</span> No sign-up, no fuss</span><label className="skeleton-toggle"><input type="checkbox" checked={preview} onChange={e => setPreview(e.target.checked)} disabled={loading} />Preview loading</label></div>}
+        {!shared && <div className="below-input"><span><Check size={14} /> Shared taxes, shared fairly <span className="separator-dot">·</span> No sign-up, no fuss</span></div>}
         {shared && error && <p className="form-error" role="alert">{error}</p>}
-        {(loading || preview || result) && <section className="results" aria-live="polite" aria-busy={loading || preview}>
-          {loading || preview ? <FoodLoader /> : result && <><SettlementDashboard session={result} onChange={updateTab} dark={dark} friendId={friendId} onChooseFriend={() => setIdentityOpen(true)} onShare={shareTab} />{parseNotice && <p className="demo-note" role="status">{parseNotice}</p>}</>}
+        {(loading || result) && <section className="results" aria-live="polite" aria-busy={loading}>
+          {loading ? <FoodLoader /> : result && <><SettlementDashboard session={result} onChange={updateTab} dark={dark} friendId={friendId} onChooseFriend={() => setIdentityOpen(true)} onShare={shareTab} />{parseNotice && <p className="demo-note" role="status">{parseNotice}</p>}</>}
         </section>}
       </section>
       <section className="closing"><h2>Keep the memories.<br /><span>Not the mental math.</span></h2><p>For the dinners that run late, the trips worth taking,<br />and the people you’d do it all again with.</p><div className="closing-details"><span><ReceiptText /> Any shared expense</span><span><CheckCheck /> A fair, simple split</span><span><MessageCircle /> Less awkward chats</span></div></section>
