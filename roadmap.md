@@ -10,4 +10,6 @@
 - [x] Verify payment codes, editing, settlement, and mobile layout; actual bank transfers are external and not verified by Tabby.
 - [x] Add receipt OCR and item assignment sheet; live receipt extraction and assignment verified.
 - [x] Add validated URL-hash sharing and personal pending balances; fresh-link opening and payment URI verified.
-- [x] Polish labels, keyboard focus, and mobile touch targets; 23 tests pass and live flows checked.- [x] Personality pass: hero illustration, food loader, payment map, tone tags, new nudge tones, recap story card, full confetti.
+- [x] Polish labels, keyboard focus, and mobile touch targets; 23 tests pass and live flows checked.
+- [x] Personality pass: hero illustration, food loader, payment map, tone tags, new nudge tones, recap story card, full confetti.
+- [x] Fine-tune layout: hero flex alignment, compact phone currency pill, centered notes card, even chip spacing, typing box above the phone fold.
