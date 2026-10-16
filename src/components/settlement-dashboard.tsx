@@ -109,7 +109,7 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
   const nudgeLink = nudge ? upiPaymentLink(session, nudge) : null;
   const appUrl = (() => { try { return typeof window === "undefined" ? "" : `${window.location.origin}${window.location.pathname}${encodeTabHash(session)}`; } catch { return typeof window === "undefined" ? "" : window.location.origin; } })();
   const nudgeIntro = !nudge ? "" : tone === "Casual" ? "" : tone === "Playful" ? "Coffee on you? ☕🍕 " : "Per my last pizza 📊, kindly action this by EOD. ";
-  const nudgeText = !nudge ? "" : `${nudgeIntro}Hey ${name(nudge.from)}! Here is your split of ${money(nudge.amount)} for ${session.title} from Tabby: ${appUrl}. Let's settle up whenever you can! ✨`;
+  const nudgeText = !nudge ? "" : `${nudgeIntro}Hey ${name(nudge.from)}! Here is your split of ${money(nudge.amount)} for ${session.title} from Tabby. Let’s settle up whenever you can! ✨\n${appUrl}`;
   function sendWhatsApp() { const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(nudgeText)}`; const win = window.open(whatsappUrl, "_blank", "noopener,noreferrer"); if (!win) window.location.href = whatsappUrl; }
   async function copyUpi(upi: string) { try { await navigator.clipboard.writeText(upi); toast.success("UPI ID copied"); } catch { toast.error("Couldn’t copy — select the UPI ID and copy it."); } }
   function paidOtherWay(t: TransferAction) {
