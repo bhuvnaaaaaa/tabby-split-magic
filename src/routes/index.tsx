@@ -1,3 +1,9 @@
+import { useServerFn } from "@tanstack/react-start";
+import { parseTab } from "@/lib/tabby.functions";
+import { parseTabReliably } from "@/lib/tabby-parser";
+import { TABBY_EXAMPLES as examples } from "@/lib/tabby-local";
+import { allocateEqually, fromMinorUnits, toMinorUnits, tabGrossTotal, tabOverheadTotal } from "@/lib/tabby-math";
+import type { TabSession, TransferAction } from "@/types/tabby";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Camera, Check, CheckCheck, ChevronDown, Copy, Heart, LoaderCircle, MessageCircle, Moon, ReceiptText, ShieldCheck, Sun, X } from "lucide-react";
@@ -16,60 +22,34 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const examples = [
-  { label: "Road trip cabin", text: "4 of us went on a road trip. Maya paid 8000 for the cabin, Rohan paid 2400 for fuel. Tax was 400. Split equally." },
-  { label: "Weekend dinner & cabs", text: "4 of us grabbed pizza and cabs. Maya paid 1800 for food, Rohan paid 600 for cab. Tax was 120. Split equally." },
-  { label: "Monthly flat utilities", text: "3 of us share a flat. Maya paid 2400 for electricity, Rohan paid 900 for internet. Tax was 150. Split equally." },
-];
-type Settlement = { from: string; to: string; amount: number };
-type Split = { total: number; each: number; people: number; tax: number; transfers: Settlement[] };
-
-function splitNotes(notes: string): Split | null {
-  const payments = [...notes.matchAll(/([A-Z][a-z]+)\s+paid\s+[₹$€]?\s*([\d,]+(?:\.\d+)?)/gi)].flatMap(m => { const name = m[1]; const amount = m[2]; return name && amount ? [{ name, amount: Number(amount.replaceAll(",", "")) }] : []; });
-  const count = Number(notes.match(/(\d+)\s+(?:of us|people|friends|roommates)/i)?.[1]);
-  const tax = Number(notes.match(/tax\s*(?:was|is|of|:)?\s*[₹$€]?\s*([\d,]+(?:\.\d+)?)/i)?.[1]?.replaceAll(",", "") ?? 0);
-  const names = [...new Set(payments.map(p => p.name))];
-  if (!payments.length || !Number.isInteger(count) || count < names.length || count > 30 || count < 2) return null;
-  const total = payments.reduce((sum, p) => sum + p.amount, 0) + tax;
-  const each = total / count;
-  // Unassigned tax is fronted by the first payer; everyone shares it equally.
-  const balances = Array.from({ length: count }, (_, i) => ({ name: names[i] ?? `Friend ${i - names.length + 1}`, balance: payments.filter(p => p.name === names[i]).reduce((s, p) => s + p.amount, 0) + (i === 0 ? tax : 0) - each }));
-  const creditors = balances.filter(p => p.balance > 0.005);
-  const debtors = balances.filter(p => p.balance < -0.005);
-  const transfers: Settlement[] = [];
-  for (const debtor of debtors) for (const creditor of creditors) {
-    const amount = Math.min(-debtor.balance, creditor.balance);
-    if (amount > 0.005) { transfers.push({ from: debtor.name, to: creditor.name, amount }); debtor.balance += amount; creditor.balance -= amount; }
-  }
-  return { total, each, people: count, tax, transfers };
-}
-
 function Index() {
   const [currency, setCurrency] = useState("INR");
   const [dark, setDark] = useState(false);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState(false);
-  const [result, setResult] = useState<Split | null>(null);
+  const [result, setResult] = useState<TabSession | null>(null);
   const [error, setError] = useState("");
   const [receipt, setReceipt] = useState<{ name: string; url: string } | null>(null);
   const [copied, setCopied] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  const parseOnline = useServerFn(parseTab);
+  const [parseNotice, setParseNotice] = useState("");
   useEffect(() => () => { if (receipt) URL.revokeObjectURL(receipt.url); }, [receipt]);
   const money = (value: number) => new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: 2 }).format(value);
-  function untangle() {
+  async function untangle() {
     if (!notes.trim()) { setError("Add a few notes about who paid and how many friends shared the tab."); return; }
-    setError(""); setResult(null); setPreview(false); setLoading(true);
-    timer.current = setTimeout(() => {
-      const split = splitNotes(notes);
-      setResult(split); setLoading(false);
-      if (!split) setError("For this demo, include the group size and payments like ‘4 of us. Maya paid 1800’. Or try an example below.");
-    }, 1800);
+    setError(""); setResult(null); setPreview(false); setLoading(true); setParseNotice(""); setCopied(null);
+    try {
+      const parsed = await parseTabReliably(notes, currency, () => parseOnline({ data: { notes, currency } }), !navigator.onLine);
+      setResult(parsed.session);
+      setParseNotice(parsed.warning ?? "");
+    } catch (error) { setError(error instanceof Error ? error.message : "We couldn’t read the tab. Please try an example."); }
+    finally { setLoading(false); }
   }
-  async function copyTransfer(t: Settlement, i: number) {
-    try { await navigator.clipboard.writeText(`${t.from} owes ${t.to} ${money(t.amount)}. Settled with Tabby.`); setCopied(i); }
+  const participantName = (id: string) => result?.participants.find(p => p.id === id)?.name ?? id;
+  async function copyTransfer(t: TransferAction, i: number) {
+    try { await navigator.clipboard.writeText(`${participantName(t.from)} owes ${participantName(t.to)} ${money(t.amount)}. Settled with Tabby.`); setCopied(i); }
     catch { setError("Your browser couldn’t copy the settlement. You can select and copy the amount instead."); }
   }
   return <div className={dark ? "tabby-app dark" : "tabby-app"}>
@@ -99,8 +79,8 @@ function Index() {
         </div>
         <div className="below-input"><span><Check size={14} /> Shared taxes, shared fairly <span className="separator-dot">·</span> No sign-up, no fuss</span><label className="skeleton-toggle"><input type="checkbox" checked={preview} onChange={e => setPreview(e.target.checked)} disabled={loading} />Preview loading</label></div>
         {(loading || preview || result) && <section className="results" aria-live="polite" aria-busy={loading || preview}>
-          <div className="results-heading"><h2>{loading || preview ? "A little untangling…" : "All clear. Here’s the split."}</h2><span>{loading || preview ? "Finding the fairest way" : `${result?.people} friends · ${money(result?.total ?? 0)} total`}</span></div>
-          {loading || preview ? <div className="transaction-grid" aria-label="Loading settlements">{[0, 1, 2].map(i => <div className="transaction-card skeleton-card animate-pulse" key={i}><div className="skeleton-avatar" /><div className="skeleton-line" /><div className="skeleton-line short" /><div className="skeleton-button" /></div>)}</div> : result && <><p className="split-note">{money(result.each)} per person, including {money(result.tax / result.people)} in shared tax. Unassigned tax is credited to the first payer. Unnamed friends are numbered.</p><div className="transaction-grid">{result.transfers.map((t, i) => <div className="transaction-card" key={`${t.from}-${t.to}`}><span className="transaction-avatar">{t.from[0]}</span><p>{t.from} <ArrowRight size={13} /> {t.to}</p><strong>{money(t.amount)}</strong><Button variant="receipt" onClick={() => copyTransfer(t, i)}>{copied === i ? <CheckCheck /> : <Copy />}{copied === i ? "Copied" : "Copy settlement"}</Button></div>)}</div><p className="demo-note">Simulated equal split · Currency changes the denomination, not the exchange rate. Payment links aren’t connected yet.</p></>}
+          <div className="results-heading"><h2>{loading || preview ? "A little untangling…" : "All clear. Here’s the split."}</h2><span>{loading || preview ? "Finding the fairest way" : `${result?.participants.length} friends · ${money(result ? tabGrossTotal(result) : 0)} total`}</span></div>
+          {loading || preview ? <div className="transaction-grid" aria-label="Loading settlements">{[0, 1, 2].map(i => <div className="transaction-card skeleton-card animate-pulse" key={i}><div className="skeleton-avatar" /><div className="skeleton-line" /><div className="skeleton-line short" /><div className="skeleton-button" /></div>)}</div> : result && <><p className="split-note">{result.title} · {result.participants.map(p => `${p.name}: ${money(p.totalOwed)}`).join(" · ")}. Shared overhead: {money(tabOverheadTotal(result))}; {money(fromMinorUnits(allocateEqually(toMinorUnits(tabOverheadTotal(result)), result.participants.length)[1] ?? 0))} each before any odd paise/cents, which go to the first participant. Unassigned overhead is credited to the first payer.</p><div className="transaction-grid">{result.transfers.map((t, i) => <div className="transaction-card" key={`${t.from}-${t.to}`}><span className="transaction-avatar">{participantName(t.from)[0]}</span><p>{participantName(t.from)} <ArrowRight size={13} /> {participantName(t.to)}</p><strong>{money(t.amount)}</strong><Button variant="receipt" onClick={() => copyTransfer(t, i)}>{copied === i ? <CheckCheck /> : <Copy />}{copied === i ? "Copied" : "Copy settlement"}</Button></div>)}</div><p className="demo-note">{parseNotice && <span role="status">{parseNotice} </span>}Currency changes the denomination, not the exchange rate. Payment links aren’t connected yet.</p></>}
         </section>}
       </section>
       <section className="closing"><img src={meal} width={768} height={512} alt="A shared pizza on a lavender plate, with a glass and terracotta napkin" loading="lazy" /><h2>Keep the memories.<br /><span>Not the mental math.</span></h2><p>For the dinners that run late, the trips worth taking,<br />and the people you’d do it all again with.</p><div className="closing-details"><span><ReceiptText /> Any shared expense</span><span><CheckCheck /> A fair, simple split</span><span><MessageCircle /> Less awkward chats</span></div></section>
