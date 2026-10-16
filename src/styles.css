@@ -141,7 +141,7 @@
 .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 600; letter-spacing: 0; color: var(--muted-foreground); }
 .small-dot { width: 6px; height: 6px; display: inline-block; border-radius: 50%; background: var(--terracotta); }
 h1, h2 { font-family: var(--font-display); letter-spacing: 0; }
-.intro h1 { font-size: 50px; font-weight: 500; line-height: 1.2; margin: 20px auto 19px; max-width: 850px; }
+.intro h1 { font-size: 50px; font-weight: 500; line-height: 1.2; margin: 16px auto 14px; max-width: 850px; }
 .intro h1 em { color: var(--primary); font-weight: 400; }
 .intro-copy { color: var(--muted-foreground); font-size: 13px; line-height: 1.9; }
 .workspace { max-width: 1024px; margin: auto; padding: 0 24px; }
@@ -331,7 +331,7 @@ footer svg { color: var(--terracotta); }
   .item-amount { font-size: 11px; }
   .milestone-check { display: none; }
 }
-@media (min-width: 1500px) { .intro { padding-top: 80px; } .closing { margin-top: 50px; } }
+@media (min-width: 1500px) { .intro { padding-top: 32px; } .closing { margin-top: 50px; } }
 @media (max-width: 640px) {
   .site-header { height: 70px; padding: 0 16px; margin: 0; }
   .wordmark { font-size: 30px; }
