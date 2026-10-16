@@ -22,3 +22,17 @@ export function expenseCategory(title: string) {
   if (/rent|utilit|electric|internet|water|flat|cabin|stay|hotel/i.test(title)) return { icon: "🏠", label: "Home & stays" };
   return { icon: "", label: /tax|tip|delivery|fee/i.test(title) ? "Shared fee" : "Shared expense" };
 }
+/** Playful badge for a payout, from the creditor's largest category of paid items. */
+export function payoutTag(tab: TabSession, transfer: TransferAction) {
+  const totals = new Map<string, number>();
+  for (const item of tab.items) {
+    if (item.paidById !== transfer.to || item.isOverheadFee) continue;
+    const label = expenseCategory(item.title).label;
+    totals.set(label, (totals.get(label) ?? 0) + toMinorUnits(item.amount));
+  }
+  const top = [...totals.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+  if (top === "Dining") return { icon: "🍕", label: "Food Feast" };
+  if (top === "Transport") return { icon: "🚕", label: "Cab Split" };
+  if (top === "Home & stays") return { icon: "🏠", label: "Flat Utilities" };
+  return { icon: "🧾", label: "Shared Tab" };
+}
