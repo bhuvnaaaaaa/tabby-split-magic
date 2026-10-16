@@ -88,7 +88,7 @@ describe("shareable snapshots", () => {
     expect(decoded).toEqual({
       ...tab,
       participants: tab.participants.map((p, i) => ({ ...p, id: `person-${i + 1}` })),
-      items: tab.items.map((item, i) => ({ ...item, id: `item-${i + 1}`, paidById: pid(item.paidById), splitAmongIds: item.splitAmongIds.map(pid), isOverheadFee: Boolean(item.isOverheadFee) })),
+      items: tab.items.map((item, i) => ({ ...item, id: `item-${i + 1}`, paidById: pid(item.paidById), splitAmongIds: item.splitAmongIds.map(pid), ...(item.isOverheadFee ? { isOverheadFee: true } : {}) })),
       transfers: tab.transfers.map(t => ({ ...t, from: pid(t.from), to: pid(t.to) })),
     });
   });
