@@ -273,7 +273,8 @@ footer svg { color: var(--terracotta); }
 .payment-qr svg { display: block; width: 100%; height: auto; }
 .qr-recipient { font-size: 12px; color: var(--muted-foreground); overflow-wrap: anywhere; }
 .payment-note { font-size: 10px; line-height: 1.7; color: var(--muted-foreground); }
-.nudge-sheet { left: 50%; right: auto; transform: translateX(-50%); width: 100%; max-width: 448px; margin-inline: auto; border-radius: 24px 24px 0 0; bottom: 0; display: grid; gap: 0; overflow-x: hidden; background: color-mix(in srgb, var(--card) 95%, transparent); backdrop-filter: blur(24px); border: 1px solid transparent; background-clip: padding-box; box-shadow: 0 32px 80px -32px rgba(46, 16, 101, 0.18), 0 24px 60px -24px color-mix(in oklab, var(--primary) 30%, transparent); }
+.nudge-sheet { left: 50%; right: auto; transform: translateX(-50%); width: 100%; max-width: 448px; margin-inline: auto; border-radius: 24px 24px 0 0; bottom: 0; display: grid; gap: 0; max-height: calc(100dvh - 48px); padding-block: 16px; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; -ms-overflow-style: none; background: color-mix(in srgb, var(--card) 95%, transparent); backdrop-filter: blur(24px); border: 1px solid transparent; background-clip: padding-box; box-shadow: 0 32px 80px -32px rgba(46, 16, 101, 0.18), 0 24px 60px -24px color-mix(in oklab, var(--primary) 30%, transparent); }
+.nudge-sheet::-webkit-scrollbar { width: 0; height: 0; display: none; }
 .nudge-sheet > * { min-width: 0; max-width: 100%; }
 .nudge-sheet::before { content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; background: linear-gradient(135deg, color-mix(in oklab, var(--primary) 45%, transparent), rgba(251, 207, 232, 0.7), rgba(254, 215, 170, 0.6)); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
 .sheet-handle { width: 36px; height: 4px; border-radius: 4px; background: var(--border); margin: -9px auto 3px; }
@@ -281,7 +282,7 @@ footer svg { color: var(--terracotta); }
 .nudge-recipient { display: inline-flex; align-items: center; gap: 8px; width: fit-content; max-width: 100%; margin-top: 10px; background: color-mix(in oklab, var(--primary) 10%, var(--card)); border: 1px solid color-mix(in oklab, var(--primary) 20%, transparent); border-radius: 999px; padding: 5px 14px 5px 6px; font-size: 13px; color: var(--foreground); }
 .nudge-recipient-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--primary); color: var(--primary-foreground); display: grid; place-items: center; font-size: 12px; font-weight: 700; }
 .nudge-recipient strong { font-weight: 700; }
-.tone-toggle { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.tone-toggle { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .tone-pill { border-radius: 999px; padding: 0 16px; min-height: 40px; display: inline-flex; align-items: center; font-size: 13px; font-weight: 600; font-family: var(--font-sans); background: color-mix(in oklab, var(--primary) 4%, var(--card)); border: 1px solid var(--border); color: var(--foreground); cursor: pointer; transition: transform 0.15s ease, background 0.15s ease; }
 .tone-pill:hover { background: color-mix(in oklab, var(--primary) 10%, var(--card)); }
 .tone-pill.active { background: var(--primary); border-color: var(--primary); color: var(--primary-foreground); transform: scale(1.04); }
