@@ -90,9 +90,10 @@ function decodeV1(raw: unknown): TabSession {
 function decodeV2(raw: unknown): TabSession {
   const p = payloadV2Schema.parse(raw);
   const ids = p.p.map((_, i) => `person-${i + 1}`);
-  const participant = (index: number) => {
-    if (index < 0 || index >= ids.length) throw new Error("Invalid participant reference.");
-    return ids[index];
+  const participant = (index: number): string => {
+    const id = ids[index];
+    if (index < 0 || !id) throw new Error("Invalid participant reference.");
+    return id;
   };
   const tab = calculateTabSession({
     title: p.t, currency: p.c, sharedTaxes: fromMinorUnits(p.tax ?? 0),
