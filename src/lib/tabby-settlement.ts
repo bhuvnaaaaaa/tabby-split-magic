@@ -12,8 +12,8 @@ export function upiPaymentLink(tab: TabSession, transfer: TransferAction): strin
   const recipient = tab.participants.find(p => p.id === transfer.to);
   const upi = recipient?.upiId?.trim();
   if (tab.currency !== "INR" || !recipient || !upi || !/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$/.test(upi)) return null;
-  const params = new URLSearchParams({ pa: upi, pn: recipient.name, am: (toMinorUnits(transfer.amount) / 100).toFixed(2), cu: "INR" });
-  return `upi://pay?${params.toString()}`;
+  const q = [`pa=${encodeURIComponent(upi)}`, `pn=${encodeURIComponent(recipient.name)}`, `am=${(toMinorUnits(transfer.amount) / 100).toFixed(2)}`, "cu=INR", `tn=${encodeURIComponent(`Tabby: ${tab.title}`.slice(0, 80))}`];
+  return `upi://pay?${q.join("&")}`;
 }
 
 export function expenseCategory(title: string) {
