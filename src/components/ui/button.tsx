@@ -9,6 +9,10 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        tabby: "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 rounded-lg",
+        receipt: "border border-border bg-card text-foreground hover:bg-secondary rounded-lg",
+        example: "border border-border bg-card text-muted-foreground hover:bg-secondary hover:text-primary rounded-full",
+        currency: "bg-primary text-primary-foreground rounded-md shadow-sm",
         default: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
         destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         outline:
