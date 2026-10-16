@@ -169,7 +169,28 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
       <p className="payment-note">Payments aren’t verified automatically — {payment ? name(payment.to) : "the receiver"} confirms by marking it settled.</p>
       {error && <p className="form-error" role="alert">{error}</p>}
     </DialogContent></Dialog>
-    <Sheet open={Boolean(nudge)} onOpenChange={open => { if (!open) setNudgeId(null); }}><SheetContent side="bottom" className={`${modalClass} nudge-sheet`}><div className="sheet-handle" /><SheetTitle>A little nudge, no awkwardness.</SheetTitle><SheetDescription>{nudge ? `A note for ${name(nudge.from)} · ${money(nudge.amount)}` : ""}</SheetDescription><div className="tone-toggle" aria-label="Nudge tone">{TONES.map(value => <Button key={value} variant={tone === value ? "currency" : "ghost"} aria-pressed={tone === value} onClick={() => setTone(value)}>{value}</Button>)}</div><p className="nudge-preview">{nudgePreview}</p><div className="nudge-actions"><Button variant="tabby" asChild className="whatsapp-send"><a href={`https://wa.me/?text=${encodeURIComponent(nudgeText)}`} target="_blank" rel="noopener noreferrer" onClick={e => { e.preventDefault(); sendWhatsApp(); }}>💬 Send via WhatsApp</a></Button><Button variant="receipt" onClick={() => void copyNudge()}>📋 Copy Text</Button></div></SheetContent></Sheet>
+    <Sheet open={Boolean(nudge)} onOpenChange={open => { if (!open) setNudgeId(null); }}>
+      <SheetContent side="bottom" className={`${modalClass} nudge-sheet`}>
+        <div className="sheet-handle" />
+        <SheetTitle>A little nudge, no awkwardness.</SheetTitle>
+        <SheetDescription className="sr-only">{nudge ? `A note for ${name(nudge.from)} · ${money(nudge.amount)}` : ""}</SheetDescription>
+        {nudge && <div className="nudge-recipient"><span className="nudge-recipient-avatar" aria-hidden="true">{name(nudge.from).slice(0, 1)}</span>Sending to&nbsp;<strong>{name(nudge.from)}</strong>&nbsp;·&nbsp;{money(nudge.amount)}</div>}
+        <div className="tone-toggle" aria-label="Nudge tone">
+          {TONES.map(value => <button key={value} type="button" className={`tone-pill${tone === value ? " active" : ""}`} aria-pressed={tone === value} onClick={() => setTone(value)}>{TONE_LABELS[value]}</button>)}
+        </div>
+        {nudge && <div className="nudge-bubble">
+          {nudgeIntro && <p className="bubble-line">{nudgeIntro}</p>}
+          <p className="bubble-line">Hey <strong>{name(nudge.from)}</strong>! Here’s your split of <strong>{money(nudge.amount)}</strong> for {session.title} on Tabby:</p>
+          <span className="bubble-link"><span aria-hidden="true">🔗</span>Pay via 1-tap{appHost && <span className="bubble-host"> · {appHost}</span>}</span>
+          <p className="bubble-line">Let’s settle up whenever you can! ✨</p>
+          <span className="bubble-meta">Just now · <CheckCheck size={12} aria-hidden="true" /></span>
+        </div>}
+        <div className="nudge-actions">
+          <Button variant="tabby" asChild className="whatsapp-send"><a href={`https://wa.me/?text=${encodeURIComponent(nudgeText)}`} target="_blank" rel="noopener noreferrer" onClick={e => { e.preventDefault(); sendWhatsApp(); }}>💬 Send via WhatsApp</a></Button>
+          <Button variant="receipt" onClick={() => void copyNudge()}>📋 Copy Text</Button>
+        </div>
+      </SheetContent>
+    </Sheet>
     <Dialog open={Boolean(edit)} onOpenChange={open => { if (!open) setEdit(null); }}><DialogContent className={modalClass}><DialogTitle>{edit?.kind === "person" ? `${editedPerson?.name}’s payment details` : edit?.kind === "tax" ? "Edit shared taxes" : `Edit ${editedItem?.title ?? "expense"}`}</DialogTitle><DialogDescription>{edit?.kind === "person" ? "UPI payment details" : "Expense details"}</DialogDescription><form onSubmit={saveEdit} className="edit-form">
       {edit?.kind === "person" ? <label>UPI ID<input aria-label="UPI ID" value={upiDraft} placeholder={`${(editedPerson?.name ?? "name").toLowerCase().replace(/[^a-z0-9]/g, "")}@okaxis`} onChange={e => setUpiDraft(e.target.value)} /></label> : <><label>Amount ({session.currency})<input aria-label="Expense amount" type="number" min="0" step="0.01" required value={amountDraft} onChange={e => setAmountDraft(e.target.value)} /></label>{edit?.kind === "item" && <><label>Paid by<select aria-label="Paid by" value={payerDraft} onChange={e => setPayerDraft(e.target.value)}>{session.participants.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label><fieldset><legend>Split among</legend>{session.participants.map(p => <label className="split-person" key={p.id}><input type="checkbox" checked={editedItem?.isOverheadFee || splitDraft.includes(p.id)} disabled={editedItem?.isOverheadFee} onChange={e => setSplitDraft(ids => e.target.checked ? [...ids, p.id] : ids.filter(id => id !== p.id))} />{p.name}</label>)}</fieldset></>}{hasSettled && <label className="reset-warning"><input type="checkbox" checked={resetConfirmed} onChange={e => setResetConfirmed(e.target.checked)} />Reset settlement marks and recalculate payments</label>}</>}
       {error && <p className="form-error" role="alert">{error}</p>}<div className="edit-actions"><Button variant="receipt" type="button" onClick={() => setEdit(null)}>Cancel</Button><Button variant="tabby" type="submit"><Check />Save changes</Button></div>
