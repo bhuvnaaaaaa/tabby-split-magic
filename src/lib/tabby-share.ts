@@ -97,7 +97,7 @@ function decodeV2(raw: unknown): TabSession {
   };
   const tab = calculateTabSession({
     title: p.t, currency: p.c, sharedTaxes: fromMinorUnits(p.tax ?? 0),
-    participants: p.p.map((name, i) => ({ id: ids[i], name, ...(p.u?.[i] ? { upiId: p.u[i] } : {}) })),
+    participants: p.p.map((name, i) => ({ id: `person-${i + 1}`, name, ...(p.u?.[i] ? { upiId: p.u[i] } : {}) })),
     items: p.i.map(([title, amount, payer, split, overhead], i) => ({ id: `item-${i + 1}`, title, amount: fromMinorUnits(amount), paidById: participant(payer), splitAmongIds: split.map(participant), ...(overhead ? { isOverheadFee: true } : {}) })),
   });
   return resolveSettled(tab, (p.s ?? []).map(([from, to, amount]) => ({ from: participant(from), to: participant(to), amountMinor: amount })));
