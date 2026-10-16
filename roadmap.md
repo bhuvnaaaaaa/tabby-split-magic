@@ -8,6 +8,6 @@
 - [x] Add greedy payouts, settlement tracking, and balance ribbon.
 - [x] Add UPI payment codes, tone-based WhatsApp nudges, and editable audit trail.
 - [x] Verify payment codes, editing, settlement, and mobile layout; actual bank transfers are external and not verified by Tabby.
-- [ ] Add receipt OCR and item assignment sheet.
-- [ ] Add validated URL-hash sharing and personal pending balances.
-- [ ] Polish labels, keyboard focus, and mobile touch targets; verify the complete flows.
+- [x] Add receipt OCR and item assignment sheet; live receipt extraction and assignment verified.
+- [x] Add validated URL-hash sharing and personal pending balances; fresh-link opening and payment URI verified.
+- [x] Polish labels, keyboard focus, and mobile touch targets; 23 tests pass and live flows checked.
