@@ -412,6 +412,7 @@ a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visib
   .hero-cluster { order: -1; width: 96px; height: 96px; border-radius: 50%; background: var(--secondary); border: 1px solid var(--border); padding: 0; box-shadow: 0 12px 28px color-mix(in oklab, var(--primary) 16%, transparent); }
   .hero-float { font-size: 20px; }
   .site-header { padding: 0 16px; }
+  .intro, .workspace { padding-inline: 16px; }
   .currency-switch { display: none; }
   .currency-compact { display: block; }
   .header-divider { display: none; }
