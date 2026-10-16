@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1792127030802,
+      "tag": "0000_tabby_ai_circuit_state",
+      "breakpoints": true
+    }
+  ]
+}
