@@ -3,7 +3,7 @@ import type { TabSession } from "@/types/tabby";
 /** Visual map of the simplified payments: debtor avatar -> creditor avatar. */
 export function TransferFlow({ session }: { session: TabSession }) {
   const people = session.participants;
-  const W = 520, H = 230, cx = W / 2, cy = H / 2, rx = 200, ry = 78;
+  const W = 520, H = 250, cx = W / 2, cy = H / 2, rx = 200, ry = 80;
   const pos = new Map(people.map((p, i) => {
     const a = (i / people.length) * Math.PI * 2 - Math.PI / 2;
     return [p.id, { x: cx + rx * Math.cos(a), y: cy + ry * Math.sin(a) }];
@@ -23,7 +23,7 @@ export function TransferFlow({ session }: { session: TabSession }) {
       {people.map(p => { const at = pos.get(p.id)!; const owes = p.netBalance < 0; return <g key={p.id} className={owes ? "flow-node debtor" : "flow-node"}>
         <circle cx={at.x} cy={at.y} r={r} />
         <text x={at.x} y={at.y + 4} textAnchor="middle" className="flow-initial">{p.name.slice(0, 1)}</text>
-        {people.length <= 12 && <text x={at.x} y={at.y + r + 14} textAnchor="middle" className="flow-name">{p.name}</text>}
+        {people.length <= 12 && <text x={at.x} y={at.y < cy ? at.y - r - 7 : at.y + r + 14} textAnchor="middle" className="flow-name">{p.name}</text>}
       </g>; })}
     </svg>
     <figcaption><span className="legend-dot debtor" />Owes <span className="legend-dot" />Is owed · {session.transfers.length} {session.transfers.length === 1 ? "payment" : "payments"} instead of a tangle</figcaption>
