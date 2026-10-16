@@ -10,10 +10,11 @@
 <!-- LOVABLE:END -->
 
 ## Application structure
-- Parse expense notes through an AI-backed TanStack server function with a regex client fallback; receipt images remain previews without OCR.
+- Parse expense notes with a regex fallback and receipt photos with server-side multimodal extraction; require review and friend assignment before creating receipt liabilities.
 - Use integer minor units for all liabilities and transfers; group overhead is allocated once and decimal numbers are only DTO/display values, preventing floating-point leakage.
 - Validate strict extraction schemas and cross-references before computing balances; local fallback rejects unsupported notes instead of guessing financial obligations.
 - Keep AI helpers server-only and persist terminal access/credit pauses in a service-only circuit table; owner-confirmed recovery must clear the pause before fresh online requests.
 - Define the visual system and responsive layouts in src/styles.css and use shared Button variants for interactive controls to keep themes consistent.
 - Keep settlement tracking and audit events session-local; UPI links and QR codes initiate payments but only explicit user marking confirms settlement.
 - Recalculate editable expenses with the shared precision engine and largest-debtor/largest-creditor matching; confirm clearing settlement marks before financial edits to avoid silently invalidating recorded payments.
+- Share bounded, versioned URL-fragment snapshots without storing expenses or receipt photos; validate input and recompute financial values before hydration, because links are editable and not authoritative payment records.
