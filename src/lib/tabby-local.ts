@@ -1,5 +1,6 @@
 import type { ParsedTab } from "@/types/tabby";
 import { fromMinorUnits, toMinorUnits } from "./tabby-math";
+import { parseAsymmetric } from "./tabby-flex";
 
 export const TABBY_EXAMPLES = [
   { label: "Road trip cabin", text: "4 of us went on a road trip. Maya paid 8000 for the cabin, Rohan paid 2400 for fuel. Tax was 400. Split equally." },
@@ -9,6 +10,8 @@ export const TABBY_EXAMPLES = [
 
 export function parseTabLocally(notes: string, currency: string): ParsedTab {
   if (!["INR", "USD", "EUR"].includes(currency)) throw new Error("Unsupported currency.");
+  const asymmetric = parseAsymmetric(notes, currency);
+  if (asymmetric) return asymmetric;
   if (/\b(?:only|excluding|except|unequally|percent|included|including|refund)\b|%/i.test(notes)) throw new Error("These notes need online parsing. For an offline split, use an equal-split example.");
   const count = Number(notes.match(/\b(\d+)\s+(?:of us|people|friends|roommates)\b/i)?.[1]);
   if (!Number.isInteger(count) || count < 2 || count > 30) throw new Error("Include a group size, such as ‘4 of us’, or choose an example.");
