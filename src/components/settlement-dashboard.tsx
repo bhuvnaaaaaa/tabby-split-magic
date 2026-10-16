@@ -187,21 +187,19 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
           {TONES.map(value => <button key={value} type="button" className={`tone-pill${tone === value ? " active" : ""}`} aria-pressed={tone === value} onClick={() => setTone(value)}>{TONE_LABELS[value]}</button>)}
         </div>
         {nudge && <div className="nudge-bubble">
-          {nudgeIntro && <p className="bubble-line">{nudgeIntro}</p>}
-          <p className="bubble-line">Hey <strong>{name(nudge.from)}</strong>! Here’s your split of <strong>{money(nudge.amount)}</strong> for {session.title} on Tabby:</p>
-          <span className="bubble-link"><span aria-hidden="true">🔗</span>Pay via 1-tap{appHost && <span className="bubble-host"> · {appHost}</span>}</span>
-          <p className="bubble-line">Let’s settle up whenever you can! ✨</p>
-          <span className="bubble-meta">Just now · <CheckCheck size={12} aria-hidden="true" /></span>
+          <p className="bubble-line">
+            {nudgeParts ? <>{nudgeParts[0]}<span className="bubble-link"><span aria-hidden="true">⚡</span>1-Tap Settle ➔</span>{nudgeParts[1]}</> : nudgeText}
+          </p>
+          <span className="bubble-meta">Just now · Delivered <CheckCheck size={12} aria-hidden="true" /></span>
         </div>}
         <div className="nudge-actions">
-          <Button variant="tabby" className="nudge-send" onClick={() => void sendNudge()}>💬 Send Nudge</Button>
           <div className="nudge-app-row">
-            <Button variant="receipt" asChild><a href={`sms:&body=${encodeURIComponent(nudgeText)}`} aria-label="Send nudge via iMessage or SMS">💬 iMessage / SMS</a></Button>
-            <Button variant="receipt" asChild className="wa-send"><a href={`https://wa.me/?text=${encodeURIComponent(nudgeText)}`} target="_blank" rel="noopener noreferrer" aria-label="Send nudge via WhatsApp" onClick={e => { e.preventDefault(); sendWhatsApp(); }}>📱 WhatsApp</a></Button>
+            <Button variant="receipt" asChild className="sms-send"><a href={`sms:&body=${encodeURIComponent(nudgeText)}`} aria-label="Send nudge via iMessage or SMS">💬 Send via iMessage / SMS</a></Button>
+            <Button variant="receipt" asChild className="wa-send"><a href={`https://wa.me/?text=${encodeURIComponent(nudgeText)}`} target="_blank" rel="noopener noreferrer" aria-label="Send nudge via WhatsApp" onClick={e => { e.preventDefault(); sendWhatsApp(); }}>📱 Send via WhatsApp</a></Button>
           </div>
-          <Button variant="receipt" onClick={() => void copyNudge()}>📋 Copy Text</Button>
+          <Button variant="receipt" className="nudge-copy" onClick={() => void copyNudge()}>📋 Copy Formatted Text</Button>
         </div>
-        <p className="nudge-hint">Friendly social nudge — send it from any chat app.</p>
+        <p className="nudge-hint">No app download needed for friends to view and settle.</p>
       </SheetContent>
     </Sheet>
     <Dialog open={Boolean(edit)} onOpenChange={open => { if (!open) setEdit(null); }}><DialogContent className={modalClass}><DialogTitle>{edit?.kind === "person" ? `${editedPerson?.name}’s payment details` : edit?.kind === "tax" ? "Edit shared taxes" : `Edit ${editedItem?.title ?? "expense"}`}</DialogTitle><DialogDescription>{edit?.kind === "person" ? "UPI payment details" : "Expense details"}</DialogDescription><form onSubmit={saveEdit} className="edit-form">
