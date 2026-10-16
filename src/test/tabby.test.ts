@@ -101,4 +101,13 @@ describe("shareable snapshots", () => {
     const restored = decodeTabHash(encodeTabHash(tab));
     expect(restored?.participants[0]?.totalOwed).toBe(10.04);
   });
+  it("still reads version-1 share links", () => {
+    const tab = calculateTabSession(sample());
+    const payload = { v: 1, t: tab.title, c: tab.currency, p: tab.participants.map(p => [p.id, p.name, p.upiId ?? null]), i: tab.items.map(i => [i.id, i.title, toMinorUnits(i.amount), i.paidById, i.splitAmongIds, false]), tax: toMinorUnits(tab.sharedTaxes), s: [] };
+    const encoded = btoa(JSON.stringify(payload)).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
+    expect(decodeTabHash(`#tab=${encoded}`)).toEqual({ ...tab, items: tab.items.map(i => ({ ...i, isOverheadFee: false })) });
+  });
+  it("keeps share links compact", () => {
+    expect(encodeTabHash(calculateTabSession(sample())).length).toBeLessThan(320);
+  });
 });
