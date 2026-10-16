@@ -19,6 +19,10 @@ export function ReceiptWorkflow({ open, onOpenChange, currency, current, dark, o
   const [dragging, setDragging] = useState(false);
   const active = useRef(false);
   useEffect(() => () => { if (photo) URL.revokeObjectURL(photo.url); }, [photo]);
+  useEffect(() => {
+    if (!draft || draft.participants.some(p => p.id === payer)) return;
+    setPayer(draft.participants[0]?.id ?? "");
+  }, [draft, payer]);
 
   async function choose(file: File) {
     if (active.current) return;

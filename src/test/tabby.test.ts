@@ -83,7 +83,7 @@ describe("shareable snapshots", () => {
     tab.transfers = tab.transfers.map(t => ({ ...t, isSettled: true }));
     const hash = encodeTabHash(tab);
     expect(hash).toMatch(/^#tab=[A-Za-z0-9_-]+$/);
-    expect(decodeTabHash(hash)).toEqual(tab);
+    expect(decodeTabHash(hash)).toEqual({ ...tab, items: tab.items.map(i => ({ ...i, isOverheadFee: Boolean(i.isOverheadFee) })) });
   });
   it("rejects corrupt, oversized and financially invalid snapshots", () => {
     expect(decodeTabHash("#other")).toBeNull();
