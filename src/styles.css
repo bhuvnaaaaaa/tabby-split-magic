@@ -457,3 +457,5 @@ a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visib
 .recap-actions p { color: var(--muted-foreground); font-size: 13px; max-width: 360px; line-height: 1.7; }
 .recap-status { font-size: 12px !important; }
 @media (max-width: 760px) { .recap-layout { grid-template-columns: 1fr; justify-items: center; } .story-card { width: min(320px, 100%); } .recap-actions { align-items: stretch; width: 100%; } }
+.hero-art { -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 58%, transparent 72%); mask-image: radial-gradient(circle at 50% 50%, #000 58%, transparent 72%); }
+@media (max-width: 760px) { .hero-cluster { overflow: hidden; padding: 0; } .hero-art { -webkit-mask-image: none; mask-image: none; transform: scale(1.15); animation: none; } }
