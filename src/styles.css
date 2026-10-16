@@ -203,8 +203,6 @@ footer svg { color: var(--terracotta); }
 .receipt-preview p { color: var(--muted-foreground); font-size: 10px; margin-top: 4px; }
 .receipt-preview button { margin-left: auto; flex-shrink: 0; }
 .hero-title { position: relative; }
-.workspace.has-result { max-width: 1080px; }
-.has-result .input-card, .has-result .below-input { max-width: 750px; margin-inline: auto; }
 .settlement-dashboard { animation: dashboard-in 300ms ease-out; }
 .dashboard-title { display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 10px 0 22px; }
 .dashboard-title h2 { font-size: 32px; margin-top: 6px; }
