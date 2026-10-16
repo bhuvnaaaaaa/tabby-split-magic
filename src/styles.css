@@ -459,3 +459,7 @@ a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visib
 @media (max-width: 760px) { .recap-layout { grid-template-columns: 1fr; justify-items: center; } .story-card { width: min(320px, 100%); } .recap-actions { align-items: stretch; width: 100%; } }
 .hero-art { -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 58%, transparent 72%); mask-image: radial-gradient(circle at 50% 50%, #000 58%, transparent 72%); }
 @media (max-width: 760px) { .hero-cluster { overflow: hidden; padding: 0; } .hero-art { -webkit-mask-image: none; mask-image: none; transform: scale(1.15); animation: none; } }
+.settled-toggle.is-locked { opacity: .7; cursor: not-allowed; }
+.inline-link { background: none; border: 0; padding: 0; color: var(--primary); font: inherit; text-decoration: underline; cursor: pointer; }
+.inline-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.upi-hint { font-size: 11px; color: var(--muted-foreground); margin-top: 6px; }
