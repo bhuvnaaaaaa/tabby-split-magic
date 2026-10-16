@@ -1,5 +1,6 @@
 import type { ParsedTab } from "@/types/tabby";
 import { fromMinorUnits, toMinorUnits } from "./tabby-math";
+import { parseAsymmetric } from "./tabby-flex";
 
 export const TABBY_EXAMPLES = [
   { label: "Road trip cabin", text: "4 of us went on a road trip. Maya paid 8000 for the cabin, Rohan paid 2400 for fuel. Tax was 400. Split equally." },
