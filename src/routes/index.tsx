@@ -78,9 +78,7 @@ function Index() {
     </header>
     <main>
       {!shared && <section className="intro">
-        <div className="eyebrow"><span className="small-dot" /> LESS MATH. MORE MEMORIES.</div>
-        <div className="hero-title"><h1>Good times with friends,<br /> settled without the <em>awkward math.</em></h1><div className="hero-cluster" aria-hidden="true"><img src={friends} width={560} height={560} alt="" className="hero-art" fetchPriority="high" decoding="async" /></div></div>
-        <p className="intro-copy">Paste your dinner notes, trip recap, or upload a bill. We’ll untangle who paid,<br className="desktop-break" /> split shared taxes equally, and give you clean 1-tap links.</p>
+        <div className="hero-title"><div className="hero-text"><div className="eyebrow"><span className="small-dot" /> LESS MATH. MORE MEMORIES.</div><h1>Good times with friends, settled without the <em>awkward math.</em></h1><p className="intro-copy">Paste your dinner notes, trip recap, or upload a bill. We’ll untangle who paid, split shared taxes equally, and give you clean 1-tap links.</p></div><div className="hero-cluster" aria-hidden="true"><img src={friends} width={560} height={560} alt="" className="hero-art" fetchPriority="high" decoding="async" /></div></div>
       </section>}
       <section className={result ? "workspace has-result" : "workspace"} aria-label="Split a tab">
         {!shared && <div className="input-card">
