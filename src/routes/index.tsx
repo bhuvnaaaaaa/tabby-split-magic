@@ -72,6 +72,7 @@ function Index() {
     } catch (error) { setError(error instanceof Error ? error.message : "We couldn’t read the tab. Please try an example."); }
     finally { setLoading(false); }
   }
+  useEffect(() => { if (!result || shared) return; const id = requestAnimationFrame(() => document.getElementById("results-section")?.scrollIntoView({ behavior: "smooth", block: "start" })); return () => cancelAnimationFrame(id); }, [result === null, shared]);
   return <div className={dark ? "tabby-app dark" : "tabby-app"}>
     <header className="site-header">
       <a href="/" className="wordmark" aria-label="Tabby home">tabby<span className="logo-mark"><ReceiptText size={13} strokeWidth={1.8} /></span></a>
@@ -100,7 +101,7 @@ function Index() {
         </div>}
         {!shared && <div className="below-input"><span><Check size={14} /> Shared taxes, shared fairly <span className="separator-dot">·</span> No sign-up, no fuss</span></div>}
         {shared && error && <p className="form-error" role="alert">{error}</p>}
-        {(loading || result) && <section className="results" aria-live="polite" aria-busy={loading}>
+        {(loading || result) && <section id="results-section" className="results" aria-live="polite" aria-busy={loading}>
           {loading ? <FoodLoader /> : result && <><SettlementDashboard session={result} onChange={updateTab} dark={dark} friendId={friendId} onChooseFriend={() => setIdentityOpen(true)} onShare={shareTab} />{parseNotice && <p className="demo-note" role="status">{parseNotice}</p>}</>}
         </section>}
       </section>
