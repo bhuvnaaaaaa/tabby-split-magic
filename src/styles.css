@@ -313,13 +313,16 @@ footer svg { color: var(--terracotta); }
 }
 @media (min-width: 1500px) { .intro { padding-top: 80px; } .closing { margin-top: 50px; } }
 @media (max-width: 640px) {
-  .site-header { height: 82px; padding: 0 16px; margin: 0; }
-  .wordmark { font-size: 34px; }
+  .site-header { height: 70px; padding: 0 16px; margin: 0; }
+  .wordmark { font-size: 30px; }
   .header-controls { gap: 8px; }
-  .intro { padding-top: 42px; padding-bottom: 28px; }
-  .intro h1 { font-size: 35px; line-height: 1.22; max-width: 440px; }
+  .intro { padding-top: 18px; padding-bottom: 12px; }
+  .intro h1 { font-size: 30px; line-height: 1.16; max-width: 440px; }
   .intro h1 br { display: none; }
-  .intro-copy { font-size: 12px; max-width: 380px; margin: auto; }
+  .intro-copy { font-size: 12px; line-height: 1.6; max-width: 380px; margin: auto; }
+  .hero-text h1 { margin-top: 12px; }
+  .hero-text .intro-copy { margin-top: 12px; }
+  .input-card { margin-top: 16px; }
   .desktop-break { display: none; }
   .workspace { padding: 0 16px; }
   .input-card { padding: 20px; }
