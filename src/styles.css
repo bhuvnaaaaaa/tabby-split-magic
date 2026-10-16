@@ -337,4 +337,54 @@ footer svg { color: var(--terracotta); }
   .transaction-grid { grid-template-columns: 1fr; }
   .results-heading { align-items: flex-start; flex-direction: column; }
 }
+.dashboard-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.dashboard-tools button { font-size: 11px; }
+.personal-balance { border-block: 1px solid var(--primary); padding: 24px 0; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.personal-balance span, .personal-balance p { color: var(--muted-foreground); font-size: 12px; }
+.personal-balance strong { font-family: var(--font-display); font-size: 36px; display: block; margin-block: 8px; }
+.personal-balance > div:last-child { display: flex; gap: 10px; flex-wrap: wrap; }
+.payout-card.your-payout { border-color: var(--primary); }
+.identity-friends { display: grid; gap: 10px; }
+.identity-friends button { justify-content: flex-start; height: 48px; }
+.share-link-label { font-size: 12px; }
+.share-link-label input { width: 100%; display: block; border: 1px solid var(--border); background: var(--background); padding: 12px; border-radius: 6px; margin-top: 8px; }
+.receipt-modal { max-width: 720px; }
+.receipt-dropzone { min-height: 230px; border: 1px dashed var(--border); border-radius: 8px; background: var(--background); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px; color: var(--muted-foreground); }
+.receipt-dropzone.is-dragging { border-color: var(--primary); background: var(--secondary); }
+.receipt-dropzone > img { width: 120px; height: 160px; object-fit: contain; }
+.receipt-dropzone p { font-size: 13px; display: flex; gap: 8px; align-items: center; }
+.receipt-upload-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.receipt-review-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+.receipt-review-header > img { width: 56px; height: 75px; object-fit: contain; border: 1px solid var(--border); }
+.receipt-review-header > div { flex: 1; }
+.receipt-review-header h3 { font-family: var(--font-display); font-size: 22px; }
+.receipt-review-header span { font-size: 11px; color: var(--muted-foreground); }
+.receipt-friends { display: flex; gap: 10px; flex-wrap: wrap; }
+.receipt-friends label { display: flex; align-items: center; gap: 8px; }
+.receipt-friends input { width: 105px; border-bottom: 1px solid var(--border); padding: 10px 4px; font-size: 12px; background: var(--card); }
+.receipt-payer { display: block; font-size: 12px; margin: 20px 0; }
+.receipt-payer select { margin-left: 12px; border: 1px solid var(--border); background: var(--background); border-radius: 6px; padding: 10px; max-width: 100%; }
+.assignment-row { padding: 18px 0; border-top: 1px solid var(--border); }
+.assignment-item-heading { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 13px; }
+.assignment-item-heading label { display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 13px; flex: 1; }
+.assignment-item-heading input { width: 100px; border: 1px solid var(--border); border-radius: 6px; background: var(--background); padding: 9px; flex-shrink: 0; }
+.assignment-item-heading > span { font-size: 10px; color: var(--muted-foreground); }
+.assignment-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.assignment-chips button { font-size: 11px; }
+.chip-initial { font-size: 11px; border: 1px solid currentColor; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; }
+.shared-fee { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; color: var(--success); }
+.receipt-assignment > .tabby-button { margin-top: 14px; width: 100%; }
+a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+@media (max-width: 760px) {
+  .tabby-button { min-height: 48px !important; }
+  .tabby-button:has(> svg:only-child), .tabby-modal > button:last-child { min-width: 48px; }
+  .expense-row button { width: 48px; }
+  .settled-toggle, .skeleton-toggle, .split-person { min-height: 48px; }
+  .dashboard-title { flex-wrap: wrap; }
+  .dashboard-tools { justify-content: flex-start; }
+  .personal-balance { flex-direction: column; align-items: stretch; }
+  .personal-balance > div:last-child { flex-direction: column; }
+  .assignment-item-heading label { flex-wrap: wrap; }
+  .receipt-friends input { min-height: 48px; }
+}
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
