@@ -119,19 +119,19 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
       onChange(updated); record(`${edit.kind === "tax" ? "Shared taxes" : editedItem?.title ?? "Expense"} updated. Split recalculated${hasSettled ? "; settlement marks reset" : ""}.`); setEdit(null); setError("");
     } catch (e) { setError(e instanceof Error ? e.message : "Please check the expense details."); }
   }
-  const nudgeLink = nudge ? upiPaymentLink(session, nudge) : null;
   const appUrl = (() => { try { return typeof window === "undefined" ? "" : `${window.location.origin}${window.location.pathname}${encodeTabHash(session)}`; } catch { return typeof window === "undefined" ? "" : window.location.origin; } })();
-  const appHost = (() => { try { return new URL(appUrl).host; } catch { return ""; } })();
-  const nudgeIntro = !nudge ? "" : tone === "Casual" ? "" : tone === "Playful" ? "Coffee on you? ☕🍕 " : "Per my last pizza 📊, kindly action this by EOD. ";
-  const nudgeText = !nudge ? "" : `${nudgeIntro}Hey ${name(nudge.from)}! Here’s your split of ${money(nudge.amount)} for ${session.title} on Tabby:\n👉 Pay via 1-tap: ${appUrl}\nLet’s settle up whenever you can! ✨`;
+  const isTripTab = /trip|cab|drive|road|ride|fuel|gas|travel|flight|train/i.test(session.title);
+  const nudgeText = !nudge ? "" : (() => {
+    const friend = name(nudge.from); const amount = money(nudge.amount); const title = session.title;
+    if (tone === "Casual") return `Hey ${friend}! Dropping your ${amount} share for ${title} whenever you get a minute — no rush at all! ✨ ${appUrl}`;
+    if (tone === "Playful") return isTripTab
+      ? `Gas money or snacks next time? 😄 Settle your ${amount} for ${title} right here: ${appUrl}`
+      : `My bank account told me to ping you 🥲 Send that ${amount} from ${title} whenever you can! ${appUrl}`;
+    return `Per our verbal alignment regarding ${title} logistics, circling back to close the loop on your outstanding ${amount} deliverable. Best regards! 📈 ${appUrl}`;
+  })();
+  const nudgeParts = nudgeText && appUrl && nudgeText.includes(appUrl) ? nudgeText.split(appUrl) : null;
   function sendWhatsApp() { const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(nudgeText)}`; const win = window.open(whatsappUrl, "_blank", "noopener,noreferrer"); if (!win) window.location.href = whatsappUrl; }
-  async function sendNudge() {
-    if (typeof navigator !== "undefined" && navigator.share) {
-      try { await navigator.share({ title: `Tabby Split: ${session.title}`, text: nudgeText }); return; } catch { return; }
-    }
-    sendWhatsApp();
-  }
-  async function copyNudge() { try { await navigator.clipboard.writeText(nudgeText); toast.success("Copied to clipboard!"); } catch { toast.error("Couldn’t copy — long-press the message to copy it."); } }
+  async function copyNudge() { try { await navigator.clipboard.writeText(nudgeText); toast.success("Copied to clipboard! Ready to paste anywhere ✨"); } catch { toast.error("Couldn’t copy — long-press the message to copy it."); } }
   async function copyUpi(upi: string) { try { await navigator.clipboard.writeText(upi); toast.success("UPI ID copied"); } catch { toast.error("Couldn’t copy — select the UPI ID and copy it."); } }
   function paidOtherWay(t: TransferAction) {
     if (friendId !== t.to) { toast(`Only ${name(t.to)} can confirm this payment.`, { description: `Ask ${name(t.to)} to open the tab, choose their name, and mark it settled.` }); return; }
@@ -180,26 +180,24 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
         <div className="sheet-handle" />
         <SheetTitle>A little nudge, no awkwardness.</SheetTitle>
         <SheetDescription className="sr-only">{nudge ? `A note for ${name(nudge.from)} · ${money(nudge.amount)}` : ""}</SheetDescription>
-        {nudge && <div className="nudge-recipient"><span className="nudge-recipient-avatar" aria-hidden="true">{name(nudge.from).slice(0, 1)}</span>Sending to&nbsp;<strong>{name(nudge.from)}</strong>&nbsp;·&nbsp;{money(nudge.amount)}</div>}
+        {nudge && <div className="nudge-recipient"><span className="nudge-recipient-avatar" aria-hidden="true">{name(nudge.from).slice(0, 1)}</span>For&nbsp;<strong>{name(nudge.from)}</strong>&nbsp;·&nbsp;{money(nudge.amount)}</div>}
         <div className="tone-toggle" aria-label="Nudge tone">
           {TONES.map(value => <button key={value} type="button" className={`tone-pill${tone === value ? " active" : ""}`} aria-pressed={tone === value} onClick={() => setTone(value)}>{TONE_LABELS[value]}</button>)}
         </div>
         {nudge && <div className="nudge-bubble">
-          {nudgeIntro && <p className="bubble-line">{nudgeIntro}</p>}
-          <p className="bubble-line">Hey <strong>{name(nudge.from)}</strong>! Here’s your split of <strong>{money(nudge.amount)}</strong> for {session.title} on Tabby:</p>
-          <span className="bubble-link"><span aria-hidden="true">🔗</span>Pay via 1-tap{appHost && <span className="bubble-host"> · {appHost}</span>}</span>
-          <p className="bubble-line">Let’s settle up whenever you can! ✨</p>
-          <span className="bubble-meta">Just now · <CheckCheck size={12} aria-hidden="true" /></span>
+          <p className="bubble-line">
+            {nudgeParts ? <>{nudgeParts[0]}<span className="bubble-link"><span aria-hidden="true">⚡</span>1-Tap Settle ➔</span>{nudgeParts[1]}</> : nudgeText}
+          </p>
+          <span className="bubble-meta">Just now · Delivered <CheckCheck size={12} aria-hidden="true" /></span>
         </div>}
         <div className="nudge-actions">
-          <Button variant="tabby" className="nudge-send" onClick={() => void sendNudge()}>💬 Send Nudge</Button>
           <div className="nudge-app-row">
-            <Button variant="receipt" asChild><a href={`sms:&body=${encodeURIComponent(nudgeText)}`} aria-label="Send nudge via iMessage or SMS">💬 iMessage / SMS</a></Button>
-            <Button variant="receipt" asChild className="wa-send"><a href={`https://wa.me/?text=${encodeURIComponent(nudgeText)}`} target="_blank" rel="noopener noreferrer" aria-label="Send nudge via WhatsApp" onClick={e => { e.preventDefault(); sendWhatsApp(); }}>📱 WhatsApp</a></Button>
+            <Button variant="receipt" asChild className="sms-send"><a href={`sms:&body=${encodeURIComponent(nudgeText)}`} aria-label="Send nudge via iMessage or SMS">💬 Send via iMessage / SMS</a></Button>
+            <Button variant="receipt" asChild className="wa-send"><a href={`https://wa.me/?text=${encodeURIComponent(nudgeText)}`} target="_blank" rel="noopener noreferrer" aria-label="Send nudge via WhatsApp" onClick={e => { e.preventDefault(); sendWhatsApp(); }}>📱 Send via WhatsApp</a></Button>
           </div>
-          <Button variant="receipt" onClick={() => void copyNudge()}>📋 Copy Text</Button>
+          <Button variant="receipt" className="nudge-copy" onClick={() => void copyNudge()}>📋 Copy Formatted Text</Button>
         </div>
-        <p className="nudge-hint">Friendly social nudge — send it from any chat app.</p>
+        <p className="nudge-hint">No app download needed for friends to view and settle.</p>
       </SheetContent>
     </Sheet>
     <Dialog open={Boolean(edit)} onOpenChange={open => { if (!open) setEdit(null); }}><DialogContent className={modalClass}><DialogTitle>{edit?.kind === "person" ? `${editedPerson?.name}’s payment details` : edit?.kind === "tax" ? "Edit shared taxes" : `Edit ${editedItem?.title ?? "expense"}`}</DialogTitle><DialogDescription>{edit?.kind === "person" ? "UPI payment details" : "Expense details"}</DialogDescription><form onSubmit={saveEdit} className="edit-form">
