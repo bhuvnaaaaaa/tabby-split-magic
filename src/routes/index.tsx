@@ -8,7 +8,7 @@ import { ReceiptWorkflow } from "@/components/receipt-workflow";
 import { decodeTabHash, encodeTabHash } from "@/lib/tabby-share";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Camera, Check, CheckCheck, Heart, LoaderCircle, MessageCircle, Moon, ReceiptText, ShieldCheck, Sun, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
@@ -27,8 +27,11 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+const CURRENCIES = [{ code: "INR", symbol: "₹" }, { code: "USD", symbol: "$" }, { code: "EUR", symbol: "€" }] as const;
+
 function Index() {
-  const [currency, setCurrency] = useState("INR");
+  const [currency, setCurrency] = useState<"INR" | "USD" | "EUR">("INR");
+  const notesRef = useRef<HTMLTextAreaElement>(null);
   const [dark, setDark] = useState(false);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
@@ -45,7 +48,7 @@ function Index() {
   const parseOnline = useServerFn(parseTab);
   const [parseNotice, setParseNotice] = useState("");
   useEffect(() => {
-    function hydrate() { try { const tab = decodeTabHash(window.location.hash); if (tab) { setResult(tab); setCurrency(tab.currency); setShared(true); setFriendId(null); setIdentityOpen(true); setError(""); } } catch (e) { setError(e instanceof Error ? e.message : "Couldn’t open this tab link."); } }
+    function hydrate() { try { const tab = decodeTabHash(window.location.hash); if (tab) { setResult(tab); setCurrency(tab.currency as "INR" | "USD" | "EUR"); setShared(true); setFriendId(null); setIdentityOpen(true); setError(""); } } catch (e) { setError(e instanceof Error ? e.message : "Couldn’t open this tab link."); } }
     hydrate(); window.addEventListener("hashchange", hydrate); return () => window.removeEventListener("hashchange", hydrate);
   }, []);
   function updateTab(tab: TabSession) {
@@ -72,9 +75,9 @@ function Index() {
     <header className="site-header">
       <a href="/" className="wordmark" aria-label="Tabby home">tabby<span className="logo-mark"><ReceiptText size={13} strokeWidth={1.8} /></span></a>
       <div className="header-controls">
-        <div className="currency-switch" aria-label="Currency">{([{ code: "INR", symbol: "₹" }, { code: "USD", symbol: "$" }, { code: "EUR", symbol: "€" }]).map(({ code, symbol }) => <Button key={code} size="sm" variant={currency === code ? "currency" : "ghost"} aria-pressed={currency === code} onClick={() => setCurrency(code)}>{symbol} <span>{code}</span></Button>)}</div>
+        <div className="currency-switch" aria-label="Currency">{CURRENCIES.map(({ code, symbol }) => <Button key={code} size="sm" variant={currency === code ? "currency" : "ghost"} aria-pressed={currency === code} onClick={() => setCurrency(code)}>{symbol} <span>{code}</span></Button>)}</div>
         <span className="header-divider" />
-        <Button variant="ghost" size="icon" aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} title={dark ? "Light theme" : "Dark theme"} onClick={() => setDark(!dark)}>{dark ? <Sun /> : <Moon />}</Button>
+        <Button variant="ghost" size="icon" aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} title={dark ? "Light theme" : "Dark theme"} onClick={() => { const next = !dark; document.documentElement.classList.toggle("dark", next); setDark(next); }}>{dark ? <Sun /> : <Moon />}</Button>
       </div>
     </header>
     <main>
@@ -84,8 +87,8 @@ function Index() {
       <section className={result ? "workspace has-result" : "workspace"} aria-label="Split a tab">
         {!shared && <div className="input-card">
           <div className="input-heading"><span className="input-icon"><ReceiptText size={20} /></span><div><h2>Every good time has a tab.</h2><p>Tell us about yours.</p></div><span className="little-note">Messy notes welcome <Heart size={13} /></span></div>
-          <textarea aria-label="Your tab notes" value={notes} onChange={e => { setNotes(e.target.value); setError(""); }} placeholder="e.g., 4 of us grabbed pizza and cabs. Maya paid 1800 for food, Rohan paid 600 for cab. Tax was 120. Split equally." maxLength={5000} />
-          <div className="examples"><span>Or try a little inspiration</span><div className="example-buttons">{examples.map(example => <Button variant="example" size="sm" key={example.label} onClick={() => { setNotes(example.text); setResult(null); setError(""); }}>{example.label}<ArrowRight size={12} /></Button>)}</div></div>
+          <textarea ref={notesRef} aria-label="Your tab notes" value={notes} onChange={e => { setNotes(e.target.value); setError(""); }} placeholder="e.g., 4 of us grabbed pizza and cabs. Maya paid 1800 for food, Rohan paid 600 for cab. Tax was 120. Split equally." maxLength={5000} />
+          <div className="examples"><span>Or try a little inspiration</span><div className="example-buttons">{examples.map(example => <Button variant="example" size="sm" key={example.label} onClick={() => { setNotes(example.text); setError(""); notesRef.current?.focus(); }}>{example.label}<ArrowRight size={12} /></Button>)}</div></div>
           {error && <p className="form-error" role="alert">{error}</p>}
           <div className="input-actions"><Button variant="tabby" size="lg" disabled={loading} onClick={untangle}>{loading ? <><LoaderCircle className="animate-spin" /> Untangling…</> : <>Untangle Tab <ArrowRight /></>}</Button><Button variant="receipt" size="lg" onClick={() => setReceiptOpen(true)}><Camera />Upload Receipt</Button><span className="private-note"><ShieldCheck size={14} />Just between friends.</span></div>
         </div>}
