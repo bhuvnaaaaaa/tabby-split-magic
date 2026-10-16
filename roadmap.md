@@ -5,6 +5,6 @@
 - [x] Add typed session contract and integer precision engine.
 - [x] Add strict AI parsing and offline preset fallback.
 - [x] Test rounding, preset parsing, and live parsing flow.
-- [ ] Add greedy payouts, settlement tracking, and balance ribbon.
-- [ ] Add UPI payment codes, tone-based WhatsApp nudges, and editable audit trail.
-- [ ] Verify payment, editing, settlement, and mobile flows.
+- [x] Add greedy payouts, settlement tracking, and balance ribbon.
+- [x] Add UPI payment codes, tone-based WhatsApp nudges, and editable audit trail.
+- [x] Verify payment codes, editing, settlement, and mobile layout; actual bank transfers are external and not verified by Tabby.
