@@ -2,11 +2,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { parseTab } from "@/lib/tabby.functions";
 import { parseTabReliably } from "@/lib/tabby-parser";
 import { TABBY_EXAMPLES as examples } from "@/lib/tabby-local";
-import { allocateEqually, fromMinorUnits, toMinorUnits, tabGrossTotal, tabOverheadTotal } from "@/lib/tabby-math";
-import type { TabSession, TransferAction } from "@/types/tabby";
+import type { TabSession } from "@/types/tabby";
+import { SettlementDashboard } from "@/components/settlement-dashboard";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Camera, Check, CheckCheck, ChevronDown, Copy, Heart, LoaderCircle, MessageCircle, Moon, ReceiptText, ShieldCheck, Sun, X } from "lucide-react";
+import { ArrowRight, Camera, Check, CheckCheck, Heart, LoaderCircle, MessageCircle, Moon, ReceiptText, ShieldCheck, Sun, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import meal from "@/assets/shared-meal.jpg";
 
@@ -31,26 +31,19 @@ function Index() {
   const [result, setResult] = useState<TabSession | null>(null);
   const [error, setError] = useState("");
   const [receipt, setReceipt] = useState<{ name: string; url: string } | null>(null);
-  const [copied, setCopied] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const parseOnline = useServerFn(parseTab);
   const [parseNotice, setParseNotice] = useState("");
   useEffect(() => () => { if (receipt) URL.revokeObjectURL(receipt.url); }, [receipt]);
-  const money = (value: number) => new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: 2 }).format(value);
   async function untangle() {
     if (!notes.trim()) { setError("Add a few notes about who paid and how many friends shared the tab."); return; }
-    setError(""); setResult(null); setPreview(false); setLoading(true); setParseNotice(""); setCopied(null);
+    setError(""); setResult(null); setPreview(false); setLoading(true); setParseNotice("");
     try {
       const parsed = await parseTabReliably(notes, currency, () => parseOnline({ data: { notes, currency } }), !navigator.onLine);
       setResult(parsed.session);
       setParseNotice(parsed.warning ?? "");
     } catch (error) { setError(error instanceof Error ? error.message : "We couldn’t read the tab. Please try an example."); }
     finally { setLoading(false); }
-  }
-  const participantName = (id: string) => result?.participants.find(p => p.id === id)?.name ?? id;
-  async function copyTransfer(t: TransferAction, i: number) {
-    try { await navigator.clipboard.writeText(`${participantName(t.from)} owes ${participantName(t.to)} ${money(t.amount)}. Settled with Tabby.`); setCopied(i); }
-    catch { setError("Your browser couldn’t copy the settlement. You can select and copy the amount instead."); }
   }
   return <div className={dark ? "tabby-app dark" : "tabby-app"}>
     <header className="site-header">
@@ -64,10 +57,10 @@ function Index() {
     <main>
       <section className="intro">
         <div className="eyebrow"><span className="small-dot" /> LESS MATH. MORE MEMORIES.</div>
-        <h1>Good times with friends,<br /> settled without the <em>awkward math.</em></h1>
+        <div className="hero-title"><h1>Good times with friends,<br /> settled without the <em>awkward math.</em></h1><img src={meal} alt="Friends’ shared dinner" className="hero-vignette" /></div>
         <p className="intro-copy">Paste your dinner notes, trip recap, or upload a bill. We’ll untangle who paid,<br className="desktop-break" /> split shared taxes equally, and give you clean 1-tap links.</p>
       </section>
-      <section className="workspace" aria-label="Split a tab">
+      <section className={result ? "workspace has-result" : "workspace"} aria-label="Split a tab">
         <div className="input-card">
           <div className="input-heading"><span className="input-icon"><ReceiptText size={20} /></span><div><h2>Every good time has a tab.</h2><p>Tell us about yours.</p></div><span className="little-note">Messy notes welcome <Heart size={13} /></span></div>
           <textarea aria-label="Your tab notes" value={notes} onChange={e => { setNotes(e.target.value); setError(""); }} placeholder="e.g., 4 of us grabbed pizza and cabs. Maya paid 1800 for food, Rohan paid 600 for cab. Tax was 120. Split equally." maxLength={5000} />
@@ -79,8 +72,7 @@ function Index() {
         </div>
         <div className="below-input"><span><Check size={14} /> Shared taxes, shared fairly <span className="separator-dot">·</span> No sign-up, no fuss</span><label className="skeleton-toggle"><input type="checkbox" checked={preview} onChange={e => setPreview(e.target.checked)} disabled={loading} />Preview loading</label></div>
         {(loading || preview || result) && <section className="results" aria-live="polite" aria-busy={loading || preview}>
-          <div className="results-heading"><h2>{loading || preview ? "A little untangling…" : "All clear. Here’s the split."}</h2><span>{loading || preview ? "Finding the fairest way" : `${result?.participants.length} friends · ${money(result ? tabGrossTotal(result) : 0)} total`}</span></div>
-          {loading || preview ? <div className="transaction-grid" aria-label="Loading settlements">{[0, 1, 2].map(i => <div className="transaction-card skeleton-card animate-pulse" key={i}><div className="skeleton-avatar" /><div className="skeleton-line" /><div className="skeleton-line short" /><div className="skeleton-button" /></div>)}</div> : result && <><p className="split-note">{result.title} · {result.participants.map(p => `${p.name}: ${money(p.totalOwed)}`).join(" · ")}. Shared overhead: {money(tabOverheadTotal(result))}; {money(fromMinorUnits(allocateEqually(toMinorUnits(tabOverheadTotal(result)), result.participants.length)[1] ?? 0))} each before any odd paise/cents, which go to the first participant. Unassigned overhead is credited to the first payer.</p><div className="transaction-grid">{result.transfers.map((t, i) => <div className="transaction-card" key={`${t.from}-${t.to}`}><span className="transaction-avatar">{participantName(t.from)[0]}</span><p>{participantName(t.from)} <ArrowRight size={13} /> {participantName(t.to)}</p><strong>{money(t.amount)}</strong><Button variant="receipt" onClick={() => copyTransfer(t, i)}>{copied === i ? <CheckCheck /> : <Copy />}{copied === i ? "Copied" : "Copy settlement"}</Button></div>)}</div><p className="demo-note">{parseNotice && <span role="status">{parseNotice} </span>}Currency changes the denomination, not the exchange rate. Payment links aren’t connected yet.</p></>}
+          {loading || preview ? <><div className="results-heading"><h2>A little untangling…</h2><span>Finding the fairest way</span></div><div className="transaction-grid" aria-label="Loading settlements">{[0, 1, 2].map(i => <div className="transaction-card skeleton-card animate-pulse" key={i}><div className="skeleton-avatar" /><div className="skeleton-line" /><div className="skeleton-line short" /><div className="skeleton-button" /></div>)}</div></> : result && <><SettlementDashboard session={result} onChange={setResult} dark={dark} />{parseNotice && <p className="demo-note" role="status">{parseNotice}</p>}</>}
         </section>}
       </section>
       <section className="closing"><img src={meal} width={768} height={512} alt="A shared pizza on a lavender plate, with a glass and terracotta napkin" loading="lazy" /><h2>Keep the memories.<br /><span>Not the mental math.</span></h2><p>For the dinners that run late, the trips worth taking,<br />and the people you’d do it all again with.</p><div className="closing-details"><span><ReceiptText /> Any shared expense</span><span><CheckCheck /> A fair, simple split</span><span><MessageCircle /> Less awkward chats</span></div></section>
