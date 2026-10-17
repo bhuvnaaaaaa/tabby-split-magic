@@ -170,7 +170,7 @@ textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--secon
 .below-input > span { display: flex; align-items: center; gap: 5px; }
 .below-input > span > svg { color: var(--success); }
 .separator-dot { margin: 0 5px; }
-.closing { max-width: 750px; text-align: center; margin: 35px auto 49px; padding: 0 20px; }
+.closing { max-width: 750px; text-align: center; margin: 18px auto 40px; padding: 0 20px; }
 .dark .closing > img { mix-blend-mode: normal; border-radius: 8px; }
 .closing h2 { font-size: 29px; font-weight: 500; line-height: 1.25; }
 .closing h2 span { color: var(--muted-foreground); }
@@ -472,8 +472,10 @@ a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visib
 .payment-qr canvas { display: block; margin: auto; border-radius: 8px; }
 
 /* Group recap */
-.recap-section { margin-top: 44px; }
-.recap-layout { display: grid; grid-template-columns: 320px 1fr; gap: 32px; align-items: center; }
+.recap-section { margin-top: 8px; padding: 32px 0; }
+.recap-section > .section-title { max-width: 768px; margin-inline: auto; }
+.recap-layout { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 40px; max-width: 768px; margin: 0 auto; }
+@media (min-width: 768px) { .recap-layout { flex-direction: row; } .recap-layout .story-card { flex: 0 0 auto; } .recap-layout .recap-actions { flex: 0 1 auto; } }
 .story-card { position: relative; aspect-ratio: 9 / 16; border-radius: 22px; background: var(--card); border: 1px solid var(--border); box-shadow: 0 18px 40px -20px color-mix(in oklab, var(--primary) 40%, transparent); padding: 70px 26px 26px; display: flex; flex-direction: column; align-items: center; text-align: center; overflow: hidden; background-image: radial-gradient(circle at 20% 0%, var(--secondary), transparent 55%); }
 .story-doodles { position: absolute; inset: 14px 14px auto; display: flex; justify-content: space-between; font-size: 20px; opacity: .6; }
 .story-doodles span:nth-child(even) { translate: 0 12px; }
@@ -490,7 +492,7 @@ a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visib
 .recap-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
 .recap-actions p { color: var(--muted-foreground); font-size: 13px; max-width: 360px; line-height: 1.7; }
 .recap-status { font-size: 12px !important; }
-@media (max-width: 760px) { .recap-layout { grid-template-columns: 1fr; justify-items: center; } .story-card { width: min(320px, 100%); } .recap-actions { align-items: stretch; width: 100%; } }
+@media (max-width: 767px) { .recap-layout { gap: 26px; } .story-card { width: min(300px, 100%); } .recap-actions { align-items: stretch; width: 100%; } }
 .hero-art { -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 58%, transparent 72%); mask-image: radial-gradient(circle at 50% 50%, #000 58%, transparent 72%); }
 @media (max-width: 760px) { .hero-cluster { overflow: hidden; padding: 0; } .hero-art { -webkit-mask-image: none; mask-image: none; transform: scale(1.15); animation: none; } }
 .settled-toggle.is-locked { opacity: .7; cursor: not-allowed; }
