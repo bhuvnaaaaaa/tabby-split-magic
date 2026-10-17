@@ -8,9 +8,17 @@ export function settlementProgress(transfers: TransferAction[]) {
   return { total, settled, percentage: complete ? 100 : Math.min(99, Math.round(settled / total * 100)), complete };
 }
 
+const UPI_BANKS = ["okaxis", "okhdfcbank", "okicici", "upi"];
+/** Suggested demo handle for a friend without a real UPI ID, e.g. maya@okaxis. */
+export function defaultUpiHandle(name: string) {
+  const handle = name.toLowerCase().replace(/[^a-z0-9]/g, "") || "friend";
+  const bank = UPI_BANKS[[...handle].reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % UPI_BANKS.length];
+  return `${handle}@${bank}`;
+}
+
 export function upiPaymentLink(tab: TabSession, transfer: TransferAction): string | null {
   const recipient = tab.participants.find(p => p.id === transfer.to);
-  const upi = recipient?.upiId?.trim();
+  const upi = recipient?.upiId?.trim() || (recipient ? defaultUpiHandle(recipient.name) : "");
   if (tab.currency !== "INR" || !recipient || !upi || !/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+$/.test(upi)) return null;
   const q = [`pa=${encodeURIComponent(upi)}`, `pn=${encodeURIComponent(recipient.name)}`, `am=${(toMinorUnits(transfer.amount) / 100).toFixed(2)}`, "cu=INR", `tn=${encodeURIComponent(`Tabby: ${tab.title}`.slice(0, 80))}`];
   return `upi://pay?${q.join("&")}`;
