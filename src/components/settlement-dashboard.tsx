@@ -81,6 +81,13 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
   function toggleSettled(t: TransferAction) {
     onChange({ ...session, transfers: session.transfers.map(transfer => transfer.id === t.id ? { ...transfer, isSettled: !transfer.isSettled } : transfer) });
     record(`${name(t.from)} → ${name(t.to)}: ${money(t.amount)} ${t.isSettled ? "reopened" : "marked settled"}.`);
+    if (!t.isSettled && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      void import("canvas-confetti").then(({ default: confetti }) => {
+        const styles = getComputedStyle(document.querySelector(".tabby-app") ?? document.documentElement);
+        const colors = [styles.getPropertyValue("--primary").trim(), styles.getPropertyValue("--terracotta").trim(), styles.getPropertyValue("--success").trim()];
+        void confetti({ particleCount: 45, spread: 60, startVelocity: 28, origin: { y: 0.65 }, colors, disableForReducedMotion: true });
+      });
+    }
   }
   function startPayment(t: TransferAction) {
     const link = upiPaymentLink(session, t);
@@ -159,7 +166,7 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
           <div className="payout-top"><div className="payout-people"><span className="person-avatar">{name(t.from).slice(0, 1)}</span><ArrowRight size={14} /><span className="person-avatar recipient">{name(t.to).slice(0, 1)}</span></div>{t.isSettled ? <span className="settled-badge"><Check size={12} />Settled</span> : (() => { const tag = payoutTag(session, t); return <span className="tone-tag"><span aria-hidden="true">{tag.icon}</span>{tag.label}</span>; })()}</div>
           <div className="payout-amount"><p>{name(t.from)} pays {name(t.to)}</p><strong>{money(t.amount)}</strong></div>
           <div className="payout-actions"><Button variant="tabby" size="sm" onClick={() => startPayment(t)} disabled={t.isSettled}><CreditCard />Pay via UPI</Button><Button variant="receipt" size="sm" onClick={() => { setNudgeId(t.id); setTone("Casual"); }} disabled={t.isSettled}><MessageCircle />Nudge</Button></div>
-          {(() => { const canMark = friendId === t.to; return <label className={`settled-toggle${canMark ? "" : " is-locked"}`} title={canMark ? undefined : `Only ${name(t.to)} can confirm this payment`}><input type="checkbox" checked={t.isSettled} disabled={!canMark} onChange={() => toggleSettled(t)} aria-label={`Mark ${name(t.from)} to ${name(t.to)} as settled`} /><span>{t.isSettled ? "Marked as settled" : canMark ? "Mark as Settled" : friendId ? `Only ${name(t.to)} can confirm` : <>Only {name(t.to)} can confirm · <button type="button" className="inline-link" onClick={onChooseFriend}>I’m {name(t.to)}</button></>}</span></label>; })()}
+          <label className="settled-toggle"><input type="checkbox" checked={t.isSettled} onChange={() => toggleSettled(t)} aria-label={`Mark ${name(t.from)} to ${name(t.to)} as settled`} /><span>{t.isSettled ? "Marked as settled" : "Mark as Settled"}</span></label>
 
         </article>)}</div>
       </section>
