@@ -52,7 +52,7 @@ describe("settlement dashboard helpers", () => {
     expect(settlementProgress(tab.transfers.map(t => ({ ...t, isSettled: true }))).complete).toBe(true);
     expect(settlementProgress([])).toMatchObject({ percentage: 100, complete: true });
   });
-  it("encodes a precise UPI URI and blocks missing IDs or non-INR", () => {
+  it("encodes a precise UPI URI and suggests a default handle when none is set", () => {
     const tab = calculateTabSession(sample()); const transfer = tab.transfers[0];
     if (!transfer) throw new Error("Missing transfer");
     const link = upiPaymentLink(tab, transfer);
@@ -60,7 +60,10 @@ describe("settlement dashboard helpers", () => {
     const params = new URLSearchParams(link?.split("?")[1]);
     expect(params.get("pa")).toBe("ana@bank"); expect(params.get("am")).toBe("10.03"); expect(params.get("cu")).toBe("INR");
     expect(upiPaymentLink({ ...tab, currency: "USD" }, transfer)).toBeNull();
-    expect(upiPaymentLink({ ...tab, participants: tab.participants.map(({ upiId, ...p }) => p) }, transfer)).toBeNull();
+    const noUpi = upiPaymentLink({ ...tab, participants: tab.participants.map(({ upiId, ...p }) => p) }, transfer);
+    expect(noUpi).toContain("upi://pay?");
+    expect(new URLSearchParams(noUpi?.split("?")[1]).get("pa")).toMatch(/^[a-z0-9]+@(okaxis|okhdfcbank|okicici|upi)$/);
+    expect(defaultUpiHandle("Maya Sharma")).toMatch(/^mayasharma@/);
   });
   it("recognizes friendly expense categories", () => {
     expect(expenseCategory("pizza").icon).toBe("🍕"); expect(expenseCategory("Cab ride").icon).toBe("🚕"); expect(expenseCategory("Utilities").icon).toBe("🏠");
