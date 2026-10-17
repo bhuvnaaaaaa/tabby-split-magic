@@ -55,23 +55,23 @@ export function RecapCard({ session, onShare }: { session: TabSession; onShare: 
   }
 
   return <section className="recap-section" aria-label="The Group Tab Recap">
-    <div className="section-title"><h3>📸 The Group Tab Recap</h3><span>For your story or status</span></div>
-    <div className="recap-layout">
-      <article className="story-card">
-        <div className="story-doodles" aria-hidden="true">{DOODLES.map(d => <span key={d}>{d}</span>)}</div>
-        <span className="story-eyebrow">THE GROUP TAB RECAP</span>
-        <h4>{session.title}</h4>
-        <strong className="story-total">{total}</strong>
-        <span className="story-badge">{taxes} shared taxes · split evenly</span>
-        <ul>{session.participants.map(p => { const ok = settledFor(session, p.id); return <li key={p.id} className={ok ? "is-settled" : ""}><span className="story-check">{ok ? <Check size={13} /> : null}</span>{p.name}<small>{ok ? "All settled" : "Pending"}</small></li>; })}</ul>
-        <span className="story-logo">tabby</span>
-      </article>
-      <div className="recap-actions">
-        <p>A little keepsake of the night — download it for Instagram or WhatsApp status, or send the live tab to friends.</p>
-        <Button variant="tabby" aria-label="Download Story Card" onClick={download}><Download />📥 Download Story Card</Button>
-        <Button variant="receipt" aria-label="Share Tab Link" onClick={onShare}><Link2 />🔗 Share Tab Link</Button>
-        <p role="status" className="recap-status">{status}</p>
-      </div>
+    <div className="recap-head">
+      <h3>📸 The Group Tab Recap</h3>
+      <p>A little keepsake of the night — download it for Instagram or WhatsApp status, or send the live tab to friends.</p>
     </div>
+    <article className="story-card">
+      <div className="story-doodles" aria-hidden="true">{DOODLES.map(d => <span key={d}>{d}</span>)}</div>
+      <span className="story-eyebrow">THE GROUP TAB RECAP</span>
+      <h4>{session.title}</h4>
+      <strong className="story-total">{total}</strong>
+      <span className="story-badge">{taxes} shared taxes · split evenly</span>
+      <ul>{session.participants.map(p => { const ok = settledFor(session, p.id); return <li key={p.id} className={ok ? "is-settled" : ""}><span className="story-check">{ok ? <Check size={13} /> : null}</span>{p.name}<small>{ok ? "All settled" : "Pending"}</small></li>; })}</ul>
+      <span className="story-logo">tabby</span>
+    </article>
+    <div className="recap-actions">
+      <Button variant="tabby" aria-label="Download Story Card" onClick={download}><Download />📥 Download Story Card</Button>
+      <Button variant="receipt" aria-label="Share Tab Link" onClick={onShare}><Link2 />🔗 Share Tab Link</Button>
+    </div>
+    <p role="status" className="recap-status">{status}</p>
   </section>;
 }
