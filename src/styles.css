@@ -473,6 +473,7 @@ a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visib
 
 /* Group recap */
 .recap-section { margin-top: 8px; padding: 32px 0; }
+.recap-section > .section-title { max-width: 768px; margin-inline: auto; }
 .recap-layout { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 40px; max-width: 768px; margin: 0 auto; }
 @media (min-width: 768px) { .recap-layout { flex-direction: row; } .recap-layout .story-card { flex: 0 0 auto; } .recap-layout .recap-actions { flex: 0 1 auto; } }
 .story-card { position: relative; aspect-ratio: 9 / 16; border-radius: 22px; background: var(--card); border: 1px solid var(--border); box-shadow: 0 18px 40px -20px color-mix(in oklab, var(--primary) 40%, transparent); padding: 70px 26px 26px; display: flex; flex-direction: column; align-items: center; text-align: center; overflow: hidden; background-image: radial-gradient(circle at 20% 0%, var(--secondary), transparent 55%); }
