@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Download, Link2 } from "lucide-react";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { tabGrossTotal, tabOverheadTotal } from "@/lib/tabby-math";
 import type { TabSession } from "@/types/tabby";
@@ -69,8 +69,8 @@ export function RecapCard({ session, onShare }: { session: TabSession; onShare: 
       <span className="story-logo">tabby</span>
     </article>
     <div className="recap-actions">
-      <Button variant="tabby" aria-label="Download Story Card" onClick={download}><Download />📥 Download Story Card</Button>
-      <Button variant="receipt" aria-label="Share Tab Link" onClick={onShare}><Link2 />🔗 Share Tab Link</Button>
+      <Button variant="tabby" aria-label="Download Story Card" onClick={download}>📥 Download Story Card</Button>
+      <Button variant="receipt" aria-label="Share Tab Link" onClick={onShare}>🔗 Share Tab Link</Button>
     </div>
     <p role="status" className="recap-status">{status}</p>
   </section>;
