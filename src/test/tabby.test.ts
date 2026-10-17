@@ -4,7 +4,7 @@ import { TABBY_EXAMPLES, parseTabLocally } from "@/lib/tabby-local";
 import { parseTabReliably } from "@/lib/tabby-parser";
 import { validateParsedTab } from "@/lib/tabby-schema";
 import type { ParsedTab } from "@/types/tabby";
-import { expenseCategory, settlementProgress, upiPaymentLink } from "@/lib/tabby-settlement";
+import { defaultUpiHandle, expenseCategory, settlementProgress, upiPaymentLink } from "@/lib/tabby-settlement";
 import { decodeTabHash, encodeTabHash } from "@/lib/tabby-share";
 import { buildSampleReceipt } from "@/lib/tabby-sample";
 
