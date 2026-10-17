@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { calculateTabSession, fromMinorUnits, tabGrossTotal, tabOverheadTotal, toMinorUnits } from "@/lib/tabby-math";
-import { expenseCategory, payoutTag, settlementProgress, upiPaymentLink } from "@/lib/tabby-settlement";
+import { defaultUpiHandle, expenseCategory, payoutTag, settlementProgress, upiPaymentLink } from "@/lib/tabby-settlement";
 import type { TabSession, TransferAction } from "@/types/tabby";
 
 type EditTarget = { kind: "item"; id: string } | { kind: "person"; id: string } | { kind: "tax" };
@@ -22,6 +22,7 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
   const [nudgeId, setNudgeId] = useState<string | null>(null);
   const [tone, setTone] = useState<Tone>("Casual");
   const [upiDraft, setUpiDraft] = useState("");
+  const [editingUpi, setEditingUpi] = useState(false);
   const [edit, setEdit] = useState<EditTarget | null>(null);
   const [amountDraft, setAmountDraft] = useState("");
   const [payerDraft, setPayerDraft] = useState("");
@@ -50,6 +51,7 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
   const payment = session.transfers.find(t => t.id === paymentId);
   const nudge = session.transfers.find(t => t.id === nudgeId);
   const paymentLink = payment ? upiPaymentLink(session, payment) : null;
+  const paymentHandle = payment ? (session.participants.find(p => p.id === payment.to)?.upiId?.trim() || defaultUpiHandle(name(payment.to))) : "";
   const editedItem = edit?.kind === "item" ? session.items.find(i => i.id === edit.id) : undefined;
   const editedPerson = edit?.kind === "person" ? session.participants.find(p => p.id === edit.id) : undefined;
   const hasSettled = session.transfers.some(t => t.isSettled);
@@ -83,7 +85,8 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
   function startPayment(t: TransferAction) {
     const link = upiPaymentLink(session, t);
     if (link && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) { window.location.href = link; }
-    setPaymentId(t.id); setUpiDraft(session.participants.find(p => p.id === t.to)?.upiId ?? ""); setError(""); setCopied(false); setVpaCopied(false);
+    const payee = session.participants.find(p => p.id === t.to);
+    setPaymentId(t.id); setEditingUpi(false); setUpiDraft(payee?.upiId?.trim() || defaultUpiHandle(payee?.name ?? "")); setError(""); setCopied(false); setVpaCopied(false);
   }
   function saveUpi(id: string, value: string) {
     const upiId = value.trim();
@@ -106,7 +109,7 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
       if (!item) return;
       setAmountDraft(String(item.amount)); setPayerDraft(item.paidById); setSplitDraft(item.splitAmongIds);
     } else if (target.kind === "tax") setAmountDraft(String(session.sharedTaxes));
-    else setUpiDraft(session.participants.find(p => p.id === target.id)?.upiId ?? "");
+    else { const person = session.participants.find(p => p.id === target.id); setUpiDraft(person?.upiId?.trim() || defaultUpiHandle(person?.name ?? "")); }
   }
   function saveEdit(event: React.FormEvent) {
     event.preventDefault();
@@ -134,8 +137,9 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
   async function copyNudge() { try { await navigator.clipboard.writeText(nudgeText); toast.success("Copied to clipboard! Ready to paste anywhere ✨"); } catch { toast.error("Couldn’t copy — long-press the message to copy it."); } }
   async function copyUpi(upi: string) { try { await navigator.clipboard.writeText(upi); toast.success("UPI ID copied"); } catch { toast.error("Couldn’t copy — select the UPI ID and copy it."); } }
   function paidOtherWay(t: TransferAction) {
-    if (friendId !== t.to) { toast(`Only ${name(t.to)} can confirm this payment.`, { description: `Ask ${name(t.to)} to open the tab, choose their name, and mark it settled.` }); return; }
-    if (!t.isSettled) toggleSettled(t); setPaymentId(null); toast.success(`Marked ${name(t.from)} → ${name(t.to)} as settled`);
+    if (!t.isSettled) toggleSettled(t);
+    setPaymentId(null);
+    toast.success(`Marked ${name(t.from)} → ${name(t.to)} as settled.`);
   }
 
   return <div className="settlement-dashboard">
@@ -164,14 +168,14 @@ export function SettlementDashboard({ session, onChange, dark, friendId, onChoos
           <div className="expense-row tax-row"><span className="category-icon"><ReceiptText size={17} /></span><div className="expense-detail"><strong>Shared taxes & fees</strong><span>Split evenly · everyone</span></div><span className="item-amount">{money(session.sharedTaxes)}</span><Button size="icon" variant="ghost" aria-label="Edit shared taxes" title="Edit shared taxes" onClick={() => startEdit({ kind: "tax" })}><Pencil /></Button></div>
         </div>
         <p className="allocation-note">Odd paise or cents go to {session.participants[0]?.name}. Unassigned taxes are credited to {session.participants[0]?.name}.</p>
-        <h4 className="audit-subtitle">Friends & payment details</h4><div className="participant-list">{session.participants.map(p => <div key={p.id}><span className="person-avatar">{p.name.slice(0, 1)}</span><div><strong>{p.name}</strong><small>{p.upiId || "UPI ID not added"}</small></div><span>{money(p.totalOwed)}<small>share</small></span><Button size="icon" variant="ghost" aria-label={`Edit UPI ID for ${p.name}`} title={`Edit UPI ID for ${p.name}`} onClick={() => startEdit({ kind: "person", id: p.id })}><Pencil /></Button></div>)}</div>
+        <h4 className="audit-subtitle">Friends & payment details</h4><div className="participant-list">{session.participants.map(p => <div key={p.id}><span className="person-avatar">{p.name.slice(0, 1)}</span><div><strong>{p.name}</strong><small>{p.upiId || `${defaultUpiHandle(p.name)} (suggested)`}</small></div><span>{money(p.totalOwed)}<small>share</small></span><Button size="icon" variant="ghost" aria-label={`Edit UPI ID for ${p.name}`} title={`Edit UPI ID for ${p.name}`} onClick={() => startEdit({ kind: "person", id: p.id })}><Pencil /></Button></div>)}</div>
         <h4 className="audit-subtitle">Activity</h4><ol className="audit-events">{audit.map((event, i) => <li key={`${i}-${event}`}><Check size={12} /><span>{event}</span></li>)}</ol>
       </section>
     </div>
     <RecapCard session={session} onShare={onShare} />
     <Dialog open={Boolean(payment)} onOpenChange={open => { if (!open) setPaymentId(null); }}><DialogContent className={`${modalClass} payment-modal`}><DialogTitle>Settle with {payment ? name(payment.to) : "your friend"}</DialogTitle><DialogDescription>{payment ? `${money(payment.amount)} · ${name(payment.from)}’s share of ${session.title}` : ""}</DialogDescription>
-      {session.currency !== "INR" ? <p className="payment-note">UPI only works for ₹ INR tabs. Settle in cash or by bank transfer instead.</p> : paymentLink ? <><div className="payment-qr"><QRCodeCanvas value={paymentLink} size={220} level="M" marginSize={4} fgColor="#241a2f" bgColor="#ffffff" title="UPI payment QR code" role="img" aria-label="UPI payment QR code" /></div><p className="payment-note">Scan with GPay, PhonePe, Paytm or any UPI app.</p><div className="qr-recipient"><span>{session.participants.find(p => p.id === payment?.to)?.upiId}</span><Button size="sm" variant="receipt" aria-label="Copy UPI ID" onClick={() => copyUpi(session.participants.find(p => p.id === payment?.to)?.upiId ?? "")}><Copy />Copy UPI ID</Button></div><Button variant="tabby" asChild><a href={paymentLink} aria-label="Open UPI app"><CreditCard />Open UPI app</a></Button></> : <form onSubmit={event => { event.preventDefault(); if (payment && saveUpi(payment.to, upiDraft)) toast.success("UPI ID saved"); }} className="edit-form"><p className="payment-note">Add {payment ? name(payment.to) : "their"}’s UPI ID to create a scannable QR code.</p><label>{payment ? name(payment.to) : "Recipient"}’s UPI ID<input aria-label="Recipient UPI ID" value={upiDraft} onChange={e => setUpiDraft(e.target.value)} placeholder="name@okaxis" required /></label><Button variant="tabby" type="submit">Save UPI ID <ArrowRight /></Button></form>}
-      {payment && <Button variant="receipt" aria-label="I've Paid via Other Method (Cash / Bank Transfer)" onClick={() => paidOtherWay(payment)}><Check />I’ve Paid via Other Method (Cash / Bank Transfer)</Button>}
+      {session.currency !== "INR" ? <p className="payment-note">UPI only works for ₹ INR tabs. Settle in cash or by bank transfer instead.</p> : <><div className="payment-qr"><QRCodeCanvas value={paymentLink ?? ""} size={220} level="M" marginSize={4} fgColor="#241a2f" bgColor="#ffffff" title="UPI payment QR code" role="img" aria-label="UPI payment QR code" /></div><p className="payment-note">Scan with GPay, PhonePe, Paytm or any UPI app.</p>{editingUpi ? <form onSubmit={event => { event.preventDefault(); if (payment && saveUpi(payment.to, upiDraft)) { toast.success("UPI ID saved"); setEditingUpi(false); } }} className="edit-form"><label>{payment ? name(payment.to) : "Recipient"}’s UPI ID<input aria-label="Recipient UPI ID" value={upiDraft} onChange={e => setUpiDraft(e.target.value)} placeholder="name@okaxis" required /></label><div className="edit-actions"><Button variant="receipt" type="button" onClick={() => setEditingUpi(false)}>Cancel</Button><Button variant="tabby" type="submit">Save UPI ID <ArrowRight /></Button></div></form> : <div className="qr-recipient"><span>{paymentHandle}</span><Button size="sm" variant="receipt" aria-label="Copy UPI ID" onClick={() => copyUpi(paymentHandle)}><Copy />Copy</Button><button type="button" className="inline-link" aria-label="Edit UPI ID" onClick={() => setEditingUpi(true)}>[Edit]</button></div>}{paymentLink && <Button variant="tabby" asChild><a href={paymentLink} aria-label="Open UPI app"><CreditCard />Open UPI app</a></Button>}</>}
+      {payment && <Button variant="receipt" aria-label="Mark as Paid (Demo / Cash)" onClick={() => paidOtherWay(payment)}><Check />Mark as Paid (Demo / Cash)</Button>}
       <p className="payment-note">Payments aren’t verified automatically — {payment ? name(payment.to) : "the receiver"} confirms by marking it settled.</p>
       {error && <p className="form-error" role="alert">{error}</p>}
     </DialogContent></Dialog>
